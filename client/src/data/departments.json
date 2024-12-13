@@ -1,0 +1,14 @@
+{
+  "departments": [
+    "QA",
+    "Frontend",
+    "Backend",
+    "PM",
+    "HR",
+    "Marketing",
+    "Design",
+    "DevOps",
+    "Operations",
+    "Network"
+  ]
+}
