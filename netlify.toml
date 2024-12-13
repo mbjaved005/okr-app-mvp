@@ -1,7 +1,7 @@
 [build]
-  command = "CI= npm run build"
+  command = "npm run build"
   publish = "client/dist"
-  ignore = "exit 0"
+  ignore = "exit 1"
 
 
 [functions]
