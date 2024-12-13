@@ -9,7 +9,8 @@
     "client-install": "cd client && npm install",
     "server": "cd server && npm run dev",
     "server-install": "cd server && npm install",
-    "start": "concurrently -n \"client,server\" \"npm run client\" \"npm run server\""
+    "start": "concurrently -n \"client,server\" \"npm run client\" \"npm run server\"",
+    "build": "npm run postinstall && cd client && npm run build"
   },
   "author": "",
   "license": "ISC",
