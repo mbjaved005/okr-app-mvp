@@ -62,7 +62,7 @@ export function Settings() {
         role: user.role || '',
       });
       console.log('FormData set in Settings:', formData);
-      setAvatarUrl(user.profilePicture ? `http://localhost:3000/${user.profilePicture}` : null);
+      setAvatarUrl(user.profilePicture ? `${process.env.API_URL}/${user.profilePicture}` : null);
     }
   }, [user]);
 
@@ -127,7 +127,7 @@ export function Settings() {
           },
         });
         if (response.data.success) {
-          const newAvatarUrl = `http://localhost:3000/${response.data.profilePicture}`;
+          const newAvatarUrl = `${process.env.API_URL}/${response.data.profilePicture}`;
           setAvatarUrl(newAvatarUrl);
           await updateAuthProfile({ ...user, profilePicture: response.data.profilePicture });
           toast({

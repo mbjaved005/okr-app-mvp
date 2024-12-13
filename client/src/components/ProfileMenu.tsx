@@ -33,7 +33,7 @@ export function ProfileMenu() {
     navigate("/login")
   }
 
-  const profilePictureUrl = user?.profilePicture ? `http://localhost:3000/${user.profilePicture.replace(/\\/g, '/')}` : undefined;
+  const profilePictureUrl = user?.profilePicture ? `${process.env.API_URL}/${user.profilePicture.replace(/\\/g, '/')}` : undefined;
 
   console.log("Rendering Avatar. profilePicture:", profilePictureUrl, "name:", user?.name);
 
