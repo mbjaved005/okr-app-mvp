@@ -110,7 +110,7 @@ app.use(
   authRoutes
 );
 
-app.get("/auth/test", (req, res) => {
+app.get("/api/auth/test", (req, res) => {
   res.json({ message: "Auth route is working" });
 });
 
