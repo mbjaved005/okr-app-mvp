@@ -1,15 +1,19 @@
 [build]
+  functions = "functions"
+  functionsDirectory = "netlify/functions"
   command = "npm run build"
   publish = "client/dist"
 
-
-[functions]
+[dev]
+  publish = "server"
   directory = "server"
-  included_files = ["server/**/*.js"]
+  functions = "functions"
 
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-  force = true
+[build.environment]
+  NODE_VERSION = "14"
 
+[context.production.environment]
+  NODE_ENV = "production"
+
+[context.deploy-preview.environment]
+  NODE_ENV = "development"
