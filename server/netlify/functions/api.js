@@ -4,14 +4,14 @@ const express = require("express");
 const serverless = require("serverless-http");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
-const authRoutes = require("./routes/auth");
-const { authenticateWithToken } = require("./routes/middleware/auth");
+const authRoutes = require("../../routes/auth");
+const { authenticateWithToken } = require("../../routes/middleware/auth");
 const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
-const logger = require("./utils/log");
-const userManagementRoutes = require("./routes/userManagement");
-const okrRoutes = require("./routes/okr");
+const logger = require("../../utils/log");
+const userManagementRoutes = require("../../routes/userManagement");
+const okrRoutes = require("../../routes/okr");
 
 const log = logger("server");
 
