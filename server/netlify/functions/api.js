@@ -102,7 +102,7 @@ app.use("/api/okrs", okrRoutes);
 
 // Auth routes
 app.use(
-  "/api/auth",
+  "/",
   (req, res, next) => {
     log.info(`Received request to /api/auth: ${req.method} ${req.url}`);
     next();
