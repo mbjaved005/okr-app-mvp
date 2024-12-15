@@ -96,13 +96,13 @@ app.use((req, res, next) => {
 
 // Define routes
 app.use(authenticateWithToken);
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userManagementRoutes);
-app.use("/api/okrs", okrRoutes);
+app.use("/auth", authRoutes);
+app.use("/users", userManagementRoutes);
+app.use("/okrs", okrRoutes);
 
 // Auth routes
 app.use(
-  "/api/auth",
+  "/auth",
   (req, res, next) => {
     log.info(`Received request to /api/auth: ${req.method} ${req.url}`);
     next();
@@ -110,9 +110,13 @@ app.use(
   authRoutes
 );
 
-app.get("/api/auth/test", (req, res) => {
-  res.json({ message: "Auth route is working" });
-});
+app.get(
+  "/auth/test",
+  (req, res) => {
+    res.json({ message: "Auth route is working" });
+  },
+  abc
+);
 
 //////////////////////////
 app.use("/uploads", (req, res, next) => {
@@ -120,12 +124,12 @@ app.use("/uploads", (req, res, next) => {
   next();
 });
 
-app.use("/api/users", userManagementRoutes);
-app.use("/api/okrs", okrRoutes); // Integrate OKR routes
+app.use("/users", userManagementRoutes);
+app.use("/okrs", okrRoutes); // Integrate OKR routes
 /////////////////////////////
 
 // File upload endpoint
-app.post("/api/upload", upload.single("profilePicture"), (req, res) => {
+app.post("/upload", upload.single("profilePicture"), (req, res) => {
   log.info("Received file upload request");
   if (req.file) {
     log.info(`File uploaded successfully: ${req.file.path}`);
