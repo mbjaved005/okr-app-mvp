@@ -1,9 +1,17 @@
 [build]
   functions = "server/netlify/functions"
-  functionsDirectory = "serever/netlify/functions"
   command = "npm run build"
   publish = "client/dist"
 
+[functions]
+  directory="server/netlify/functions"
+  external_node_modules = ["express"]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
 [dev]
   publish = "server"
   directory = "server"
