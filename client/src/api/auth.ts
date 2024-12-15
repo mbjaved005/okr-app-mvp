@@ -7,8 +7,8 @@ import api from './Api';
 export const login = async (email: string, password: string) => {
   console.log('Attempting to login user:', { email });
   try {
-    console.log('Sending login request to:', '/api/auth/login');
-    const response = await api.post('/api/auth/login', { email, password });
+    console.log('Sending login request to:', '/auth/login');
+    const response = await api.post('/auth/login', { email, password });
     console.log('Login API response:', response.data);
     return response.data;
   } catch (error) {
