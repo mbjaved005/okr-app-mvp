@@ -110,6 +110,10 @@ app.use(
   authRoutes
 );
 
+app.get("/api/auth/test", (req, res) => {
+  res.json({ message: "Auth route is working" });
+});
+
 //////////////////////////
 app.use("/uploads", (req, res, next) => {
   log.info(`Static file requested: ${req.url}`);
