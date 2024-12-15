@@ -3,14 +3,15 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "postinstall": "concurrently -n \"client,server\" \"npm run client-install\" \"npm run server-install\"",
+    "concurrently-install": "concurrently -n \"client,server\" \"npm run client-install\" \"npm run server-install\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "client": "cd client && npm run dev",
     "client-install": "cd client && npm install",
     "server": "cd server && npm run dev",
     "server-install": "cd server && npm install",
     "start": "concurrently -n \"client,server\" \"npm run client\" \"npm run server\"",
-    "build": "npm run client-install && npm run server-install && npm run client-build",
+    "build-1": "npm run client-install && npm run server-install && npm run client-build",
+    "build": "npm install && cd client && npm install && cd ../server && npm install",
     "client-build": "cd client && npm run build"
   },
   "author": "",
