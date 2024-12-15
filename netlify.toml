@@ -1,5 +1,5 @@
 [build]
-  functions = "functions"
+  functions = "netlify/functions"
   functionsDirectory = "netlify/functions"
   command = "npm run build"
   publish = "client/dist"
@@ -7,10 +7,10 @@
 [dev]
   publish = "server"
   directory = "server"
-  functions = "functions"
+  functions = "netlify/functions"
 
 [build.environment]
-  NODE_VERSION = "14"
+  NODE_VERSION = "22.11.0"
 
 [context.production.environment]
   NODE_ENV = "production"
