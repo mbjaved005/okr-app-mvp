@@ -62,7 +62,7 @@ export function Settings() {
         role: user.role || '',
       });
       console.log('FormData set in Settings:', formData);
-      setAvatarUrl(user.profilePicture ? `${process.env.API_URL}/${user.profilePicture}` : null);
+      setAvatarUrl(user.profilePicture ? `${process.env.URL}/${user.profilePicture}` : null);
     }
   }, [user]);
 

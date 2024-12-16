@@ -96,7 +96,7 @@ app.use((req, res, next) => {
 
 // Define routes
 app.use(authenticateWithToken);
-// app.use("/api/auth", authRoutes);
+app.use("/api/auth", authRoutes);
 app.use("/api/users", userManagementRoutes);
 app.use("/api/okrs", okrRoutes);
 
@@ -105,7 +105,6 @@ app.use(
   "/api/auth",
   (req, res, next) => {
     log.info(`Received request to /api/auth: ${req.method} ${req.url}`);
-    res.json({ message: "is the Auth route working" });
     next();
   },
   authRoutes
@@ -121,7 +120,7 @@ app.use("/api/uploads", (req, res, next) => {
 });
 
 // File upload endpoint
-app.post("/api/upload", upload.single("profilePicture"), (req, res) => {
+app.post("/upload", upload.single("profilePicture"), (req, res) => {
   log.info("Received file upload request");
   if (req.file) {
     log.info(`File uploaded successfully: ${req.file.path}`);
@@ -133,7 +132,7 @@ app.post("/api/upload", upload.single("profilePicture"), (req, res) => {
 });
 
 // Serve static files
-app.use("/api/uploads", express.static("uploads"));
+app.use("/uploads", express.static("server/uploads"));
 log.info("Static file serving configured for /uploads directory");
 
 // Handle errors and not found routes

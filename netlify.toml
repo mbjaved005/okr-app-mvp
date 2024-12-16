@@ -15,9 +15,8 @@
   force = true
   
 [dev]
-  publish = "server"
-  directory = "server"
-  functions = "netlify/functions"
+  publish = "client/dist"
+  functions = "server/netlify/functions"
 
 [build.environment]
   NODE_VERSION = "22.11.0"

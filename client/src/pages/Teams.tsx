@@ -205,7 +205,7 @@ export function Teams() {
             <CardHeader className="flex flex-row items-center gap-4">
               <Avatar className="h-12 w-12">
                 {employee.profilePicture ? (
-                  <AvatarImage src={`http://localhost:3000/${employee.profilePicture.replace(/\\/g, '/')}`} alt={employee.name} />
+                  <AvatarImage src={`${process.env.URL}/${employee.profilePicture.replace(/\\/g, '/')}`} alt={employee.name} />
                 ) : (
                   <AvatarFallback>
                     {employee.name
