@@ -5,13 +5,13 @@ const serverless = require("serverless-http");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 import authRoutes from "../../routes/auth";
-const { authenticateWithToken } = require("../../routes/middleware/auth");
+import okrRoutes from "../../routes/okr";
+import userManagementRoutes from "../../routes/userManagement";
+import { authenticateWithToken } from "../../routes/middleware/auth";
 const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
 const logger = require("../../utils/log");
-const userManagementRoutes = require("../../routes/userManagement");
-const okrRoutes = require("../../routes/okr");
 
 const log = logger("server");
 
@@ -96,7 +96,7 @@ app.use((req, res, next) => {
 
 // Define routes
 app.use(authenticateWithToken);
-app.use("/api/auth", authRoutes);
+// app.use("/api/auth", authRoutes);
 app.use("/api/users", userManagementRoutes);
 app.use("/api/okrs", okrRoutes);
 
@@ -105,27 +105,20 @@ app.use(
   "/api/auth",
   (req, res, next) => {
     log.info(`Received request to /api/auth: ${req.method} ${req.url}`);
+    res.json({ message: "is the Auth route working" });
     next();
   },
   authRoutes
 );
 
-app.get(
-  "/api/auth/test",
-  (req, res) => {
-    res.json({ message: "Auth route is working" });
-  },
-);
+app.get("/api/auth/test", (req, res) => {
+  res.json({ message: "Auth route is working" });
+});
 
-//////////////////////////
 app.use("/api/uploads", (req, res, next) => {
   log.info(`Static file requested: ${req.url}`);
   next();
 });
-
-app.use("/api/users", userManagementRoutes);
-app.use("/api/okrs", okrRoutes); // Integrate OKR routes
-/////////////////////////////
 
 // File upload endpoint
 app.post("/api/upload", upload.single("profilePicture"), (req, res) => {
