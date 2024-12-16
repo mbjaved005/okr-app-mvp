@@ -115,7 +115,6 @@ app.get(
   (req, res) => {
     res.json({ message: "Auth route is working" });
   },
-  abc
 );
 
 //////////////////////////
