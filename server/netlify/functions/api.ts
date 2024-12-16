@@ -4,7 +4,7 @@ const express = require("express");
 const serverless = require("serverless-http");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
-const authRoutes = require("../../routes/auth");
+import authRoutes from "../../routes/auth";
 const { authenticateWithToken } = require("../../routes/middleware/auth");
 const cors = require("cors");
 const multer = require("multer");
@@ -96,13 +96,13 @@ app.use((req, res, next) => {
 
 // Define routes
 app.use(authenticateWithToken);
-app.use("/auth", authRoutes);
-app.use("/users", userManagementRoutes);
-app.use("/okrs", okrRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userManagementRoutes);
+app.use("/api/okrs", okrRoutes);
 
 // Auth routes
 app.use(
-  "/auth",
+  "/api/auth",
   (req, res, next) => {
     log.info(`Received request to /api/auth: ${req.method} ${req.url}`);
     next();
@@ -111,24 +111,24 @@ app.use(
 );
 
 app.get(
-  "/auth/test",
+  "/api/auth/test",
   (req, res) => {
     res.json({ message: "Auth route is working" });
   },
 );
 
 //////////////////////////
-app.use("/uploads", (req, res, next) => {
+app.use("/api/uploads", (req, res, next) => {
   log.info(`Static file requested: ${req.url}`);
   next();
 });
 
-app.use("/users", userManagementRoutes);
-app.use("/okrs", okrRoutes); // Integrate OKR routes
+app.use("/api/users", userManagementRoutes);
+app.use("/api/okrs", okrRoutes); // Integrate OKR routes
 /////////////////////////////
 
 // File upload endpoint
-app.post("/upload", upload.single("profilePicture"), (req, res) => {
+app.post("/api/upload", upload.single("profilePicture"), (req, res) => {
   log.info("Received file upload request");
   if (req.file) {
     log.info(`File uploaded successfully: ${req.file.path}`);
@@ -140,7 +140,7 @@ app.post("/upload", upload.single("profilePicture"), (req, res) => {
 });
 
 // Serve static files
-app.use("/uploads", express.static("uploads"));
+app.use("/api/uploads", express.static("uploads"));
 log.info("Static file serving configured for /uploads directory");
 
 // Handle errors and not found routes
