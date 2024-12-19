@@ -1,25 +1,25 @@
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Plus, Filter, Search, X, RotateCcw, Edit, Trash2 } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
-import { Label } from "@/components/ui/label"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Plus, Filter, Search, RotateCcw, Edit, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
+} from "@/components/ui/tooltip";
 import {
   Sheet,
   SheetContent,
@@ -28,7 +28,7 @@ import {
   SheetTitle,
   SheetTrigger,
   SheetFooter,
-} from "@/components/ui/sheet"
+} from "@/components/ui/sheet";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,38 +38,38 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { CreateOKRDialog } from "@/components/CreateOKRDialog"
-import { EditOKRDialog } from "@/components/EditOKRDialog"
-import { getOKRs, deleteOKR } from "@/api/okr"
-import { getUsers } from "@/api/users"
-import { format } from "date-fns"
-import { getQuarter } from "@/lib/utils"
-import { Separator } from "@/components/ui/separator"
-import { useToast } from "@/hooks/useToast"
-import departments from "@/data/departments.json"
+} from "@/components/ui/alert-dialog";
+import { CreateOKRDialog } from "@/components/CreateOKRDialog";
+import { EditOKRDialog } from "@/components/EditOKRDialog";
+import { getOKRs, deleteOKR } from "@/api/okr";
+import { getUsers } from "@/api/users";
+import { format } from "date-fns";
+import { getQuarter } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/useToast";
+import departments from "@/data/departments.json";
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'Not Started':
-      return 'bg-red-500';
-    case 'In Progress':
-      return 'bg-blue-500';
-    case 'Completed':
-      return 'bg-green-500';
+    case "Not Started":
+      return "bg-red-500";
+    case "In Progress":
+      return "bg-blue-500";
+    case "Completed":
+      return "bg-green-500";
     default:
-      return 'bg-gray-500';
+      return "bg-gray-500";
   }
 };
 
 const getUserInitials = (fullName: string) => {
   return fullName
-    .split(' ')
-    .map(name => {
+    .split(" ")
+    .map((name) => {
       const match = name.match(/^[A-Za-z]|\d+/g);
-      return match ? match.join('') : '';
+      return match ? match.join("") : "";
     })
-    .join('');
+    .join("");
 };
 
 const getQuarterLabels = (startDate: Date, endDate: Date) => {
@@ -87,21 +87,36 @@ const getQuarterLabels = (startDate: Date, endDate: Date) => {
 
 const getStatusFromProgress = (progress: number) => {
   if (progress === 0) {
-    return 'Not Started';
+    return "Not Started";
   } else if (progress > 0 && progress < 100) {
-    return 'In Progress';
+    return "In Progress";
   } else if (progress === 100) {
-    return 'Completed';
+    return "Completed";
   }
-  return 'Unknown';
+  return "Unknown";
 };
 
 export function OKRs() {
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [selectedOKR, setSelectedOKR] = useState(null)
-  const [okrs, setOkrs] = useState([])
-  const [users, setUsers] = useState<{ id: string; name: string; email: string }[]>([])
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedOKR, setSelectedOKR] = useState(null);
+  const [okrs, setOkrs] = useState<
+    {
+      id: string;
+      title: string;
+      description: string;
+      department: string;
+      category: string;
+      createdBy: string;
+      owners: string[];
+      startDate: string;
+      endDate: string;
+      progress: number;
+    }[]
+  >([]);
+  const [users, setUsers] = useState<
+    { id: string; name: string; email: string }[]
+  >([]);
   const [filter, setFilter] = useState({
     department: "all",
     category: "all",
@@ -111,120 +126,137 @@ export function OKRs() {
     startDate: "",
     endDate: "",
     quarter: "all",
-    status: "all"
-  })
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const [isResetting, setIsResetting] = useState(false)
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [okrToDelete, setOkrToDelete] = useState(null)
-  const { toast } = useToast()
+    status: "all",
+  });
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [okrToDelete, setOkrToDelete] = useState(null);
+  const { toast } = useToast();
 
-  const loggedInUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
   const loggedInUserId = loggedInUser.id; // Assuming user ID is stored as 'id'
 
   useEffect(() => {
     const fetchOKRs = async () => {
       try {
-        const response = await getOKRs()
-        setOkrs(response.okrs)
+        const response = await getOKRs();
+        setOkrs(response.okrs);
       } catch (error) {
-        console.error('Error fetching OKRs:', error)
+        console.error("Error fetching OKRs:", error);
         toast({
           variant: "destructive",
           title: "Error",
           description: "Failed to fetch OKRs",
-        })
+        });
       }
-    }
-    fetchOKRs()
-  }, [toast])
+    };
+    fetchOKRs();
+  }, [toast]);
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await getUsers()
-        setUsers(response.users)
+        const response = await getUsers();
+        setUsers(response.users);
       } catch (error) {
-        console.error('Error fetching users:', error)
+        console.error("Error fetching users:", error);
         toast({
           variant: "destructive",
           title: "Error",
           description: "Failed to fetch users",
-        })
+        });
       }
-    }
-    fetchUsers()
-  }, [toast])
+    };
+    fetchUsers();
+  }, [toast]);
 
   const handleEditClick = (okr) => {
-    setSelectedOKR(okr)
-    setIsEditDialogOpen(true)
-  }
+    setSelectedOKR(okr);
+    setIsEditDialogOpen(true);
+  };
 
   const handleDeleteClick = (okr) => {
-    setOkrToDelete(okr)
-    setIsDeleteDialogOpen(true)
-  }
+    setOkrToDelete(okr);
+    setIsDeleteDialogOpen(true);
+  };
 
   const handleDeleteConfirm = async () => {
     try {
-      await deleteOKR(okrToDelete._id)
-      const updatedOkrs = okrs.filter(okr => okr._id !== okrToDelete._id)
-      setOkrs(updatedOkrs)
+      await deleteOKR(okrToDelete._id);
+      const updatedOkrs = okrs.filter((okr) => okr._id !== okrToDelete._id);
+      setOkrs(updatedOkrs);
       toast({
         title: "Success",
         description: "OKR deleted successfully",
-      })
+      });
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to delete OKR",
-      })
+      });
     } finally {
-      setIsDeleteDialogOpen(false)
-      setOkrToDelete(null)
+      setIsDeleteDialogOpen(false);
+      setOkrToDelete(null);
     }
-  }
+  };
 
   const handleOKRUpdated = async () => {
     try {
-      const response = await getOKRs()
-      setOkrs(response.okrs)
+      const response = await getOKRs();
+      setOkrs(response.okrs);
     } catch (error) {
-      console.error('Error updating OKRs:', error)
+      console.error("Error updating OKRs:", error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to update OKRs",
-      })
+      });
     }
-  }
+  };
 
   const getOwnerInitials = (ownerId: string) => {
-    const user = users.find(user => user.id === ownerId);
+    const user = users.find((user) => user.id === ownerId);
     return user ? getUserInitials(user.name) : null;
   };
 
   const getOwnerName = (ownerId: string) => {
-    const user = users.find(user => user.id === ownerId);
+    const user = users.find((user) => user.id === ownerId);
     return user ? user.name : null;
   };
 
+  const getUserInitialsById = (userId: string) => {
+    const user = users.find((user) => user.id === userId);
+    return user ? getUserInitials(user.name) : null;
+  };
+
   const filteredOKRs = okrs.filter((okr) => {
-    const matchesDepartment = filter.department === "all" || okr.department === filter.department;
-    const matchesCategory = filter.category === "all" || okr.category === filter.category;
-    const matchesSearch = !filter.search || okr.title.toLowerCase().includes(filter.search.toLowerCase());
-    const matchesCreatedBy = filter.createdBy === "all" || okr.createdBy === filter.createdBy;
-    const matchesOwners = filter.owners === "all" || okr.owners.some(owner => owner === filter.owners);
-    const matchesStatus = filter.status === "all" || getStatusFromProgress(okr.progress) === filter.status;
+    const matchesDepartment =
+      filter.department === "all" || okr.department === filter.department;
+    const matchesCategory =
+      filter.category === "all" || okr.category === filter.category;
+    const matchesSearch =
+      !filter.search ||
+      okr.title.toLowerCase().includes(filter.search.toLowerCase());
+    const matchesCreatedBy =
+      filter.createdBy === "all" || okr.createdBy === filter.createdBy;
+    const matchesOwners =
+      filter.owners === "all" ||
+      okr.owners.some((owner) => owner === filter.owners);
+    const matchesStatus =
+      filter.status === "all" ||
+      getStatusFromProgress(okr.progress) === filter.status;
 
     const okrQuarter = getQuarter(new Date(okr.startDate));
-    const matchesQuarter = filter.quarter === "all" || okrQuarter === filter.quarter;
+    const matchesQuarter =
+      filter.quarter === "all" || okrQuarter === filter.quarter;
 
     const okrStartDate = new Date(okr.startDate);
     const okrEndDate = new Date(okr.endDate);
-    const filterStartDate = filter.startDate ? new Date(filter.startDate) : null;
+    const filterStartDate = filter.startDate
+      ? new Date(filter.startDate)
+      : null;
     const filterEndDate = filter.endDate ? new Date(filter.endDate) : null;
 
     const matchesDateRange =
@@ -244,7 +276,7 @@ export function OKRs() {
   });
 
   const resetFilters = async () => {
-    setIsResetting(true)
+    setIsResetting(true);
     setTimeout(() => {
       setFilter({
         department: "all",
@@ -255,15 +287,17 @@ export function OKRs() {
         startDate: "",
         endDate: "",
         quarter: "all",
-        status: "all"
+        status: "all",
       });
-      setIsResetting(false)
+      setIsResetting(false);
       setIsFilterOpen(false);
-    }, 500)
+    }, 500);
   };
 
   const getActiveFiltersCount = () => {
-    return Object.values(filter).filter(value => value !== "all" && value !== "" && value !== null).length;
+    return Object.values(filter).filter(
+      (value) => value !== "all" && value !== "" && value !== null
+    ).length;
   };
 
   return (
@@ -315,14 +349,16 @@ export function OKRs() {
                   <Label className="text-sm font-medium">Department</Label>
                   <Select
                     value={filter.department}
-                    onValueChange={(value) => setFilter({ ...filter, department: value })}
+                    onValueChange={(value) =>
+                      setFilter({ ...filter, department: value })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select department" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Departments</SelectItem>
-                      {departments.departments.map(department => (
+                      {departments.departments.map((department) => (
                         <SelectItem key={department} value={department}>
                           {department}
                         </SelectItem>
@@ -335,7 +371,9 @@ export function OKRs() {
                   <Label className="text-sm font-medium">Category</Label>
                   <Select
                     value={filter.category}
-                    onValueChange={(value) => setFilter({ ...filter, category: value })}
+                    onValueChange={(value) =>
+                      setFilter({ ...filter, category: value })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select category" />
@@ -352,14 +390,16 @@ export function OKRs() {
                   <Label className="text-sm font-medium">Created By</Label>
                   <Select
                     value={filter.createdBy}
-                    onValueChange={(value) => setFilter({ ...filter, createdBy: value })}
+                    onValueChange={(value) =>
+                      setFilter({ ...filter, createdBy: value })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select creator" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Creators</SelectItem>
-                      {users.map(user => (
+                      {users.map((user) => (
                         <SelectItem key={user.id} value={user.name}>
                           {user.name} ({user.email})
                         </SelectItem>
@@ -372,14 +412,16 @@ export function OKRs() {
                   <Label className="text-sm font-medium">Owners</Label>
                   <Select
                     value={filter.owners}
-                    onValueChange={(value) => setFilter({ ...filter, owners: value })}
+                    onValueChange={(value) =>
+                      setFilter({ ...filter, owners: value })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select owner" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Owners</SelectItem>
-                      {users.map(user => (
+                      {users.map((user) => (
                         <SelectItem key={user.id} value={user.id}>
                           {user.name} ({user.email})
                         </SelectItem>
@@ -392,7 +434,9 @@ export function OKRs() {
                   <Label className="text-sm font-medium">Quarter</Label>
                   <Select
                     value={filter.quarter}
-                    onValueChange={(value) => setFilter({ ...filter, quarter: value })}
+                    onValueChange={(value) =>
+                      setFilter({ ...filter, quarter: value })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select quarter" />
@@ -411,7 +455,9 @@ export function OKRs() {
                   <Label className="text-sm font-medium">Status</Label>
                   <Select
                     value={filter.status}
-                    onValueChange={(value) => setFilter({ ...filter, status: value })}
+                    onValueChange={(value) =>
+                      setFilter({ ...filter, status: value })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select status" />
@@ -429,20 +475,28 @@ export function OKRs() {
                   <Label className="text-sm font-medium">Date Range</Label>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-xs text-muted-foreground">Start Date</Label>
+                      <Label className="text-xs text-muted-foreground">
+                        Start Date
+                      </Label>
                       <Input
                         type="date"
                         value={filter.startDate}
-                        onChange={(e) => setFilter({ ...filter, startDate: e.target.value })}
+                        onChange={(e) =>
+                          setFilter({ ...filter, startDate: e.target.value })
+                        }
                         className="h-11 w-50 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
                       />
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground">End Date</Label>
+                      <Label className="text-xs text-muted-foreground">
+                        End Date
+                      </Label>
                       <Input
                         type="date"
                         value={filter.endDate}
-                        onChange={(e) => setFilter({ ...filter, endDate: e.target.value })}
+                        onChange={(e) =>
+                          setFilter({ ...filter, endDate: e.target.value })
+                        }
                         className="h-11 w-50 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
                       />
                     </div>
@@ -453,13 +507,17 @@ export function OKRs() {
             <SheetFooter className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t">
               <Button
                 onClick={resetFilters}
-                className={`w-full bg-blue-500 text-white hover:bg-blue-600 ${isResetting ? 'animate-pulse' : ''
-                  }`}
+                className={`w-full bg-blue-500 text-white hover:bg-blue-600 ${
+                  isResetting ? "animate-pulse" : ""
+                }`}
                 disabled={isResetting || getActiveFiltersCount() === 0}
               >
                 <div className="relative flex items-center justify-center gap-2">
-                  <RotateCcw className={`h-4 w-4 transition-transform duration-500 ${isResetting ? 'animate-spin' : ''
-                    }`} />
+                  <RotateCcw
+                    className={`h-4 w-4 transition-transform duration-500 ${
+                      isResetting ? "animate-spin" : ""
+                    }`}
+                  />
                   Reset Filters
                 </div>
               </Button>
@@ -476,7 +534,8 @@ export function OKRs() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">{okr.title}</CardTitle>
                   <div className="flex items-center gap-2">
-                    {(okr.owners.includes(loggedInUserId) || okr.createdBy === loggedInUserId) && (
+                    {(okr.owners.includes(loggedInUserId) ||
+                      okr.createdBy === loggedInUserId) && (
                       <>
                         <Button
                           variant="ghost"
@@ -496,12 +555,19 @@ export function OKRs() {
                         </Button>
                       </>
                     )}
-                    {getQuarterLabels(new Date(okr.startDate), new Date(okr.endDate)).map((quarter) => (
+                    {getQuarterLabels(
+                      new Date(okr.startDate),
+                      new Date(okr.endDate)
+                    ).map((quarter) => (
                       <Badge key={quarter} variant="secondary">
                         {quarter}
                       </Badge>
                     ))}
-                    <Badge className={`${getStatusColor(getStatusFromProgress(okr.progress))} text-white`}>
+                    <Badge
+                      className={`${getStatusColor(
+                        getStatusFromProgress(okr.progress)
+                      )} text-white`}
+                    >
                       {getStatusFromProgress(okr.progress)}
                     </Badge>
                   </div>
@@ -530,11 +596,15 @@ export function OKRs() {
                     </div>
                     <div>
                       <p className="text-muted-foreground">Start Date</p>
-                      <p className="font-medium">{format(new Date(okr.startDate), 'MMM dd, yyyy')}</p>
+                      <p className="font-medium">
+                        {format(new Date(okr.startDate), "MMM dd, yyyy")}
+                      </p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">End Date</p>
-                      <p className="font-medium">{format(new Date(okr.endDate), 'MMM dd, yyyy')}</p>
+                      <p className="font-medium">
+                        {format(new Date(okr.endDate), "MMM dd, yyyy")}
+                      </p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Created By</p>
@@ -542,11 +612,11 @@ export function OKRs() {
                         <Tooltip>
                           <TooltipTrigger>
                             <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-medium text-blue-600">
-                              {getUserInitials(okr.createdBy)}
+                              {getUserInitialsById(okr.createdBy)}
                             </div>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>{okr.createdBy}</p>
+                            <p>{getOwnerName(okr.createdBy)}</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -582,7 +652,10 @@ export function OKRs() {
         ) : (
           <div className="text-center text-muted-foreground mt-10">
             <h2 className="text-2xl font-semibold">No OKRs at the moment</h2>
-            <p className="mt-2 text-sm">It looks like there are no OKRs to display. Create a new OKR to get started!</p>
+            <p className="mt-2 text-sm">
+              It looks like there are no OKRs to display. Create a new OKR to
+              get started!
+            </p>
           </div>
         )}
       </div>
@@ -602,10 +675,15 @@ export function OKRs() {
         />
       )}
 
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to delete this OKR?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Are you sure you want to delete this OKR?
+            </AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the OKR
               and all of its associated key results.
@@ -623,5 +701,5 @@ export function OKRs() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
+  );
 }

@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react"
-import { useForm, useFieldArray } from "react-hook-form"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react";
+import { useForm, useFieldArray } from "react-hook-form";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,74 +8,74 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
-} from "@/components/ui/command"
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
-import { Progress } from "@/components/ui/progress"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { updateOKR, getOKRById } from "@/api/okr"
-import { getUsers } from "@/api/users"
-import { useToast } from "@/hooks/useToast"
-import { Plus, Target, Trash2, X, Check, ChevronsUpDown } from "lucide-react"
-import { cn } from "@/lib/utils"
-import departments from '@/data/departments.json';
+} from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { updateOKR, getOKRById, getOKRs } from "@/api/okr";
+import { getUsers } from "@/api/users";
+import { useToast } from "@/hooks/useToast";
+import { Plus, Target, Trash2, X, Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import departments from "@/data/departments.json";
 
 type User = {
-  id: string
-  name: string
-  email: string
-}
+  id: string;
+  name: string;
+  email: string;
+};
 
 type KeyResult = {
-  id?: string
-  title: string
-  currentValue: number
-  targetValue: number
-}
+  id?: string;
+  title: string;
+  currentValue: number;
+  targetValue: number;
+};
 
 type FormData = {
-  title: string
-  description: string
-  startDate: string
-  endDate: string
-  department: string
-  category: string
-  owners: string[]
-  keyResults: KeyResult[]
-}
+  title: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  department: string;
+  category: string;
+  owners: string[];
+  keyResults: KeyResult[];
+};
 
 type OKR = {
-  id: string
-  title: string
-  description: string
-  startDate: string
-  endDate: string
-  department: string
-  category: string
-  owners: string[]
-  keyResults: KeyResult[]
-}
+  id: string;
+  title: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  department: string;
+  category: string;
+  owners: string[];
+  keyResults: KeyResult[];
+};
 
 export function EditOKRDialog({
   open,
@@ -83,18 +83,26 @@ export function EditOKRDialog({
   okrId,
   onOKRUpdated,
 }: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  okrId: string
-  onOKRUpdated: () => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  okrId: string;
+  onOKRUpdated: () => void;
 }) {
-  const [loading, setLoading] = useState(false)
-  const [users, setUsers] = useState<User[]>([])
-  const [selectedUsers, setSelectedUsers] = useState<User[]>([])
-  const [openCombobox, setOpenCombobox] = useState(false)
-  const [category, setCategory] = useState<string>("")
-  const { toast } = useToast()
-  const { register, handleSubmit, control, watch, setValue, reset, formState: { errors } } = useForm<FormData>({
+  const [loading, setLoading] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+  const [openCombobox, setOpenCombobox] = useState(false);
+  const [category, setCategory] = useState<string>("");
+  const { toast } = useToast();
+  const {
+    register,
+    handleSubmit,
+    control,
+    watch,
+    setValue,
+    reset,
+    formState: { errors, isDirty },
+  } = useForm<FormData>({
     defaultValues: {
       title: "",
       description: "",
@@ -103,156 +111,189 @@ export function EditOKRDialog({
       department: "",
       category: "",
       owners: [],
-      keyResults: []
-    }
-  })
+      keyResults: [],
+    },
+  });
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "keyResults"
-  })
+    name: "keyResults",
+  });
+
+  const [existingOKRTitles, setExistingOKRTitles] = useState<string[]>([]); // Add this state
+
+  useEffect(() => {
+    const fetchOKRs = async () => {
+      const response = await getOKRs();
+      setExistingOKRTitles(
+        response.okrs.map((okr: OKR) => okr.title.toLowerCase())
+      );
+    };
+    fetchOKRs();
+  }, []);
 
   useEffect(() => {
     if (open && okrId) {
       getOKRById(okrId)
-        .then(data => {
+        .then((data) => {
           const okr = data.okr;
-          console.log('Editing OKR:', okr);
-          console.log('Initial Start Date:', new Date(okr.startDate));
-          console.log('Initial End Date:', okr.endDate);
+          console.log("Editing OKR:", okr);
+          console.log("Initial Start Date:", new Date(okr.startDate));
+          console.log("Initial End Date:", okr.endDate);
+          console.log("Initial okr:", okr.department);
           reset({
             title: okr.title,
             description: okr.description,
             startDate: okr.startDate.split("T")[0],
             endDate: okr.endDate.split("T")[0],
-            department: okr.department.toLowerCase(),
+            department: okr.department,
             category: okr.category.toLowerCase(),
             owners: okr.owners,
-            keyResults: okr.keyResults
-          })
-          setCategory(okr.category.toLowerCase())
-          const selectedUsers = users.filter(user =>
+            keyResults: okr.keyResults,
+          });
+          setCategory(okr.category.toLowerCase());
+          const selectedUsers = users.filter((user) =>
             okr.owners.includes(user.id)
-          )
-          setSelectedUsers(selectedUsers)
+          );
+          setSelectedUsers(selectedUsers);
         })
-        .catch(error => {
-          console.error('Error fetching OKR by ID:', error);
+        .catch((error) => {
+          console.error("Error fetching OKR by ID:", error);
           toast({
             variant: "destructive",
             title: "Error",
             description: "Failed to fetch OKR details",
-          })
+          });
         });
     }
-  }, [open, okrId, reset, toast, users])
+  }, [open, okrId, reset, toast, users]);
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const response = await getUsers()
-      setUsers(response.users)
-    }
-    fetchUsers()
-  }, [])
+      const response = await getUsers();
+      setUsers(response.users);
+    };
+    fetchUsers();
+  }, []);
 
-  const watchKeyResults = watch("keyResults")
+  const watchKeyResults = watch("keyResults");
 
   const calculateProgress = (current: number, target: number) => {
-    return Math.min(Math.round((current / target) * 100), 100)
-  }
+    return Math.min(Math.round((current / target) * 100), 100);
+  };
 
   const handleUserSelect = (selectedUser: User) => {
     if (category === "individual" && selectedUsers.length > 0) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Individual OKRs can only have one owner"
-      })
-      return
+        description: "Individual OKRs can only have one owner",
+      });
+      return;
     }
-    setSelectedUsers([...selectedUsers, selectedUser])
-    setValue('owners', [...selectedUsers, selectedUser].map(u => u.id))
-    setOpenCombobox(false)
-  }
+    setSelectedUsers([...selectedUsers, selectedUser]);
+    setValue(
+      "owners",
+      [...selectedUsers, selectedUser].map((u) => u.id)
+    );
+    setOpenCombobox(false);
+  };
 
   const handleUserRemove = (userId: string) => {
-    const newSelectedUsers = selectedUsers.filter(u => u.id !== userId)
-    setSelectedUsers(newSelectedUsers)
-    setValue('owners', newSelectedUsers.map(u => u.id))
-  }
+    const newSelectedUsers = selectedUsers.filter((u) => u.id !== userId);
+    setSelectedUsers(newSelectedUsers);
+    setValue(
+      "owners",
+      newSelectedUsers.map((u) => u.id)
+    );
+  };
 
   const handleCategoryChange = (value: string) => {
-    setCategory(value)
+    setCategory(value);
     if (value === "individual" && selectedUsers.length > 1) {
-      const firstUser = selectedUsers[0]
-      setSelectedUsers([firstUser])
-      setValue('owners', [firstUser.id])
+      const firstUser = selectedUsers[0];
+      setSelectedUsers([firstUser]);
+      setValue("owners", [firstUser.id]);
       toast({
         title: "Notice",
-        description: "Individual OKRs can only have one owner. Additional owners have been removed."
-      })
+        description:
+          "Individual OKRs can only have one owner. Additional owners have been removed.",
+      });
     }
-    setValue('category', value)
-  }
+    setValue("category", value);
+  };
 
-  const availableUsers = users.filter(user =>
-    !selectedUsers.some(selected => selected.id === user.id)
-  )
+  const availableUsers = users.filter(
+    (user) => !selectedUsers.some((selected) => selected.id === user.id)
+  );
 
   const onSubmit = async (data: FormData) => {
     try {
+      const currentOKR = await getOKRById(okrId);
+      if (
+        data.title.toLowerCase() !== currentOKR.okr.title.toLowerCase() &&
+        existingOKRTitles.includes(data.title.toLowerCase())
+      ) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "OKR with this title already exists",
+        });
+        return;
+      }
       if (data.category === "individual" && selectedUsers.length > 1) {
         toast({
           variant: "destructive",
           title: "Error",
-          description: "Individual OKRs can only have one owner"
-        })
-        return
+          description: "Individual OKRs can only have one owner",
+        });
+        return;
       }
       if (data.category === "team" && selectedUsers.length < 2) {
         toast({
           variant: "destructive",
           title: "Error",
-          description: "Team OKRs must have at least two owners"
-        })
-        return
+          description: "Team OKRs must have at least two owners",
+        });
+        return;
       }
       if (new Date(data.startDate) >= new Date(data.endDate)) {
         toast({
           variant: "destructive",
           title: "Error",
-          description: "End Date must be greater than Start Date"
-        })
-        return
+          description: "End Date must be greater than Start Date",
+        });
+        return;
       }
       for (const keyResult of data.keyResults) {
         if (keyResult.currentValue > keyResult.targetValue) {
           toast({
             variant: "destructive",
             title: "Error",
-            description: "Current value cannot be greater than target value in key results"
+            description:
+              "Current value cannot be greater than target value in key results",
           });
           return;
         }
       }
-      setLoading(true)
-      await updateOKR(okrId, data)
+      setLoading(true);
+      await updateOKR(okrId, data);
       toast({
         title: "Success",
         description: "OKR updated successfully",
-      })
-      onOKRUpdated()
-      onOpenChange(false)
+      });
+      onOKRUpdated();
+      onOpenChange(false);
     } catch (error) {
-      console.error('Error updating OKR:', error);
+      console.error("Error updating OKR:", error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to update OKR",
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -279,7 +320,9 @@ export function EditOKRDialog({
                   className="h-11 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
                   {...register("title", { required: "Title is required" })}
                 />
-                {errors.title && <span className="text-red-500">{errors.title.message}</span>}
+                {errors.title && (
+                  <span className="text-red-500">{errors.title.message}</span>
+                )}
               </div>
 
               <div className="grid w-full gap-3">
@@ -303,9 +346,15 @@ export function EditOKRDialog({
                     id="startDate"
                     type="date"
                     className="w-[140px] h-11 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
-                    {...register("startDate", { required: "Start date is required" })}
+                    {...register("startDate", {
+                      required: "Start date is required",
+                    })}
                   />
-                  {errors.startDate && <span className="text-red-500">{errors.startDate.message}</span>}
+                  {errors.startDate && (
+                    <span className="text-red-500">
+                      {errors.startDate.message}
+                    </span>
+                  )}
                 </div>
                 <div className="grid w-full gap-3">
                   <Label htmlFor="endDate" className="text-sm font-medium">
@@ -315,9 +364,15 @@ export function EditOKRDialog({
                     id="endDate"
                     type="date"
                     className="w-[140px] h-11 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
-                    {...register("endDate", { required: "End date is required" })}
+                    {...register("endDate", {
+                      required: "End date is required",
+                    })}
                   />
-                  {errors.endDate && <span className="text-red-500">{errors.endDate.message}</span>}
+                  {errors.endDate && (
+                    <span className="text-red-500">
+                      {errors.endDate.message}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -326,25 +381,36 @@ export function EditOKRDialog({
                   <Label htmlFor="department" className="text-sm font-medium">
                     Department <span className="text-red-500">*</span>
                   </Label>
-                  <Select value={watch("department")} onValueChange={(value) => setValue("department", value)}>
+                  <Select
+                    value={watch("department")}
+                    onValueChange={(value) => setValue("department", value)}
+                  >
                     <SelectTrigger className="h-11 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-colors">
                       <SelectValue placeholder="Select department" />
                     </SelectTrigger>
                     <SelectContent>
-                      {departments.departments.map(department => (
-                        <SelectItem key={department} value={department.toLowerCase()}>
+                      {departments.departments.map((department) => (
+                        <SelectItem key={department} value={department}>
                           {department}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  {errors.department && <span className="text-red-500">{errors.department.message}</span>}
+                  {errors.department && (
+                    <span className="text-red-500">
+                      {errors.department.message}
+                    </span>
+                  )}
                 </div>
                 <div className="grid w-full gap-3">
                   <Label htmlFor="category" className="text-sm font-medium">
                     Category <span className="text-red-500">*</span>
                   </Label>
-                  <Select value={watch("category")} onValueChange={handleCategoryChange} disabled={category === "individual"}>
+                  <Select
+                    value={watch("category")}
+                    onValueChange={handleCategoryChange}
+                    disabled={true}
+                  >
                     <SelectTrigger className="h-11 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-colors">
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
@@ -353,7 +419,11 @@ export function EditOKRDialog({
                       <SelectItem value="team">Team</SelectItem>
                     </SelectContent>
                   </Select>
-                  {errors.category && <span className="text-red-500">{errors.category.message}</span>}
+                  {errors.category && (
+                    <span className="text-red-500">
+                      {errors.category.message}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -375,7 +445,10 @@ export function EditOKRDialog({
                   </PopoverTrigger>
                   <PopoverContent className="w-full p-0">
                     <Command>
-                      <CommandInput placeholder="Search users..." className="h-11" />
+                      <CommandInput
+                        placeholder="Search users..."
+                        className="h-11"
+                      />
                       <CommandEmpty>No users found.</CommandEmpty>
                       <CommandGroup>
                         {availableUsers.map((user) => (
@@ -387,7 +460,9 @@ export function EditOKRDialog({
                             <Check
                               className={cn(
                                 "h-4 w-4",
-                                selectedUsers.some(selected => selected.id === user.id)
+                                selectedUsers.some(
+                                  (selected) => selected.id === user.id
+                                )
                                   ? "opacity-100"
                                   : "opacity-0"
                               )}
@@ -427,14 +502,16 @@ export function EditOKRDialog({
 
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium">
+                  <Label className="text-sm font-medium">
                     Key Results <span className="text-red-500">*</span>
                   </Label>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => append({ title: "", currentValue: 0, targetValue: 100 })}
+                    onClick={() =>
+                      append({ title: "", currentValue: 0, targetValue: 100 })
+                    }
                     className="border-blue-500 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900"
                   >
                     <Plus className="h-4 w-4" />
@@ -442,56 +519,91 @@ export function EditOKRDialog({
                   </Button>
                 </div>
                 {fields.map((field, index) => (
-                  <div key={field.id} className="space-y-4 p-6 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:border-blue-500 dark:hover:border-blue-400 transition-colors">
+                  <div
+                    key={field.id}
+                    className="space-y-4 p-6 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
+                  >
                     <div className="flex items-start justify-between">
                       <div className="flex-1 space-y-6">
                         <div className="grid w-full gap-3">
                           <Label className="text-sm font-medium">Title</Label>
                           <Input
-                            {...register(`keyResults.${index}.title` as const, { required: "Key result title is required" })}
+                            {...register(`keyResults.${index}.title` as const, {
+                              required: "Key result title is required",
+                            })}
                             placeholder="Enter key result title"
                             className="h-11 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
                           />
-                          {errors.keyResults?.[index]?.title && <span className="text-red-500">{errors.keyResults[index].title?.message}</span>}
+                          {errors.keyResults?.[index]?.title && (
+                            <span className="text-red-500">
+                              {errors.keyResults[index].title?.message}
+                            </span>
+                          )}
                         </div>
                         <div className="grid grid-cols-2 gap-6">
                           <div className="grid w-full gap-3">
-                            <Label className="text-sm font-medium">Current Value</Label>
+                            <Label className="text-sm font-medium">
+                              Current Value
+                            </Label>
                             <Input
                               type="number"
-                              {...register(`keyResults.${index}.currentValue` as const, {
-                                required: "Current value is required",
-                                valueAsNumber: true,
-                                validate: value => (value >= 0 && value <= watch(`keyResults.${index}.targetValue`)) || "Give Valid Input"
-                              })}
+                              {...register(
+                                `keyResults.${index}.currentValue` as const,
+                                {
+                                  required: "Current value is required",
+                                  valueAsNumber: true,
+                                  validate: (value) =>
+                                    (value >= 0 &&
+                                      value <=
+                                        watch(
+                                          `keyResults.${index}.targetValue`
+                                        )) ||
+                                    "Give Valid Input",
+                                }
+                              )}
                               className="h-11 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
                             />
                           </div>
                           <div className="grid w-full gap-3">
-                            <Label className="text-sm font-medium">Target Value</Label>
+                            <Label className="text-sm font-medium">
+                              Target Value
+                            </Label>
                             <Input
                               type="number"
-                              {...register(`keyResults.${index}.targetValue` as const, {
-                                required: "Target value is required",
-                                valueAsNumber: true,
-                                validate: value => value >= 0 || "Give Valid Input"
-                              })}
+                              {...register(
+                                `keyResults.${index}.targetValue` as const,
+                                {
+                                  required: "Target value is required",
+                                  valueAsNumber: true,
+                                  validate: (value) =>
+                                    value >= 0 || "Give Valid Input",
+                                }
+                              )}
                               className="h-11 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
                             />
-                            {errors.keyResults?.[index]?.targetValue && <span className="text-red-500">{errors.keyResults[index].targetValue?.message}</span>}
+                            {errors.keyResults?.[index]?.targetValue && (
+                              <span className="text-red-500">
+                                {errors.keyResults[index].targetValue?.message}
+                              </span>
+                            )}
                           </div>
                         </div>
                         {errors.keyResults?.[index]?.currentValue && (
-                          <span className="text-red-500">{errors.keyResults[index].currentValue?.message}</span>
+                          <span className="text-red-500">
+                            {errors.keyResults[index].currentValue?.message}
+                          </span>
                         )}
                         <div className="space-y-2">
                           <div className="flex justify-between text-sm">
-                            <span className="text-gray-500 dark:text-gray-400">Progress</span>
+                            <span className="text-gray-500 dark:text-gray-400">
+                              Progress
+                            </span>
                             <span className="font-medium">
                               {calculateProgress(
                                 watchKeyResults[index]?.currentValue || 0,
                                 watchKeyResults[index]?.targetValue || 1
-                              )}%
+                              )}
+                              %
                             </span>
                           </div>
                           <Progress
@@ -540,5 +652,5 @@ export function EditOKRDialog({
         </ScrollArea>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

@@ -1,17 +1,17 @@
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Progress } from "@/components/ui/progress"
-import { Input } from "@/components/ui/input"
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Button } from "@/components/ui/button"
-import { Filter, Search, X } from "lucide-react"
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Filter, Search, X } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -20,97 +20,106 @@ import {
   SheetTitle,
   SheetTrigger,
   SheetFooter,
-} from "@/components/ui/sheet"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
-import { getUsers } from "@/api/users"
-import { getOKRs } from "@/api/okr"
-import { useAuth } from "@/contexts/AuthContext"
-import departments from '@/data/departments.json'
+} from "@/components/ui/sheet";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { getUsers } from "@/api/users";
+import { getOKRs } from "@/api/okr";
+import { useAuth } from "@/contexts/AuthContext";
+import departments from "@/data/departments.json";
 
 type Employee = {
-  id: string
-  name: string
-  email: string
-  department: string
-  designation: string
-  role: string
-  profilePicture?: string
-  progress: number
-  okrsCount: number
-}
+  id: string;
+  name: string;
+  email: string;
+  department: string;
+  designation: string;
+  role: string;
+  profilePicture?: string;
+  progress: number;
+  okrsCount: number;
+};
 
 export function Teams() {
-  const [employees, setEmployees] = useState<Employee[]>([])
-  const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([])
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState({
     department: "all",
-    designation: "all"
-  })
-  const { user } = useAuth()
+    designation: "all",
+  });
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const response = await getUsers()
-        const okrResponse = await getOKRs()
-        console.log("OKRs fetched:", okrResponse.okrs)
+        const response = await getUsers();
+        const okrResponse = await getOKRs();
+        console.log("OKRs fetched:", okrResponse.okrs);
 
-        const employeesWithStats = response.users.map(user => {
-          const userOKRs = okrResponse.okrs.filter(okr => okr.owners.includes(user.id))
-          console.log(`User's OKRs for ${user.name}:`, userOKRs)
+        const employeesWithStats = response.users.map((user) => {
+          const userOKRs = okrResponse.okrs.filter((okr) =>
+            okr.owners.includes(user.id)
+          );
+          console.log(`User's OKRs for ${user.name}:`, userOKRs);
 
-          const averageProgress = userOKRs.length > 0
-            ? Math.round(userOKRs.reduce((sum, okr) => sum + okr.progress, 0) / userOKRs.length)
-            : 0
+          const averageProgress =
+            userOKRs.length > 0
+              ? Math.round(
+                  userOKRs.reduce((sum, okr) => sum + okr.progress, 0) /
+                    userOKRs.length
+                )
+              : 0;
 
           return {
             ...user,
             progress: averageProgress, // Calculate average progress based on OKRs where the user is an owner
             okrsCount: userOKRs.length, // Count OKRs where the user is an owner
-          }
-        })
-        setEmployees(employeesWithStats)
-        setFilteredEmployees(employeesWithStats)
+          };
+        });
+        setEmployees(employeesWithStats);
+        setFilteredEmployees(employeesWithStats);
       } catch (error) {
-        console.error("Error fetching employees:", error)
+        console.error("Error fetching employees:", error);
       }
-    }
-    fetchEmployees()
-  }, [user])
+    };
+    fetchEmployees();
+  }, [user]);
 
   useEffect(() => {
-    const filtered = employees.filter(employee => {
-      const matchesSearch = searchTerm === "" ||
+    const filtered = employees.filter((employee) => {
+      const matchesSearch =
+        searchTerm === "" ||
         employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         employee.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
         employee.designation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        employee.role.toLowerCase().includes(searchTerm.toLowerCase())
+        employee.role.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesDepartment = filters.department === "all" ||
-        employee.department === filters.department
+      const matchesDepartment =
+        filters.department === "all" ||
+        employee.department === filters.department;
 
-      const matchesDesignation = filters.designation === "all" ||
-        employee.designation === filters.designation
+      const matchesDesignation =
+        filters.designation === "all" ||
+        employee.designation === filters.designation;
 
-      return matchesSearch && matchesDepartment && matchesDesignation
-    })
-    console.log(`Employees -->${JSON.stringify(filtered)}`)
-    setFilteredEmployees(filtered)
-  }, [searchTerm, filters, employees])
+      return matchesSearch && matchesDepartment && matchesDesignation;
+    });
+    console.log(`Employees -->${JSON.stringify(filtered)}`);
+    setFilteredEmployees(filtered);
+  }, [searchTerm, filters, employees]);
 
-  const designations = [...new Set(employees.map(emp => emp.designation))]
+  const designations = [...new Set(employees.map((emp) => emp.designation))];
 
   const resetFilters = () => {
     setFilters({
       department: "all",
-      designation: "all"
-    })
-    setIsFilterOpen(false)
-  }
+      designation: "all",
+    });
+    setIsFilterOpen(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -152,7 +161,7 @@ export function Teams() {
                 <Select
                   value={filters.department}
                   onValueChange={(value) =>
-                    setFilters(prev => ({ ...prev, department: value }))
+                    setFilters((prev) => ({ ...prev, department: value }))
                   }
                 >
                   <SelectTrigger>
@@ -173,7 +182,7 @@ export function Teams() {
                 <Select
                   value={filters.designation}
                   onValueChange={(value) =>
-                    setFilters(prev => ({ ...prev, designation: value }))
+                    setFilters((prev) => ({ ...prev, designation: value }))
                   }
                 >
                   <SelectTrigger>
@@ -205,18 +214,29 @@ export function Teams() {
             <CardHeader className="flex flex-row items-center gap-4">
               <Avatar className="h-12 w-12">
                 {employee.profilePicture ? (
-                  <AvatarImage src={`${process.env.URL}/${employee.profilePicture.replace(/\\/g, '/')}`} alt={employee.name} />
+                  <AvatarImage
+                    src={`${process.env.URL}/${employee.profilePicture.replace(
+                      /\\/g,
+                      "/"
+                    )}`}
+                    alt={employee.name}
+                  />
                 ) : (
                   <AvatarFallback>
                     {employee.name
-                      ? employee.name.split(" ").map((n) => n[0]).join("")
+                      ? employee.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
                       : "N/A"}
                   </AvatarFallback>
                 )}
               </Avatar>
               <div>
                 <CardTitle className="text-lg">{employee.name}</CardTitle>
-                <p className="text-sm text-muted-foreground">{employee.designation}</p>
+                <p className="text-sm text-muted-foreground">
+                  {employee.designation}
+                </p>
               </div>
             </CardHeader>
             <CardContent>
@@ -252,5 +272,5 @@ export function Teams() {
         ))}
       </div>
     </div>
-  )
+  );
 }

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button"
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -7,68 +7,70 @@ import {
   CardHeader,
   CardTitle,
   CardFooter,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useToast } from "@/hooks/useToast"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Camera, Lock, AlertCircle } from "lucide-react"
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/useToast";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Camera, Lock, AlertCircle } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { useAuth } from '@/contexts/AuthContext';
-import { updateProfile } from '@/api/auth';
-import api from '@/api/Api';
-import departments from '@/data/departments.json';
+} from "@/components/ui/tooltip";
+import { useAuth } from "@/contexts/AuthContext";
+import { updateProfile } from "@/api/auth";
+import api from "@/api/Api";
+import departments from "@/data/departments.json";
 
 export function Settings() {
-  const { toast } = useToast()
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
+  const { toast } = useToast();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const { user, updateProfile: updateAuthProfile } = useAuth();
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    department: '',
-    designation: '',
-    role: '',
+    name: "",
+    email: "",
+    department: "",
+    designation: "",
+    role: "",
   });
   const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
 
   useEffect(() => {
     if (user) {
-      console.log('User data received in Settings:', user);
+      console.log("User data received in Settings:", user);
       setFormData({
-        name: user.name || '',
-        email: user.email || '',
-        department: user.department || '',
-        designation: user.designation || '',
-        role: user.role || '',
+        name: user.name || "",
+        email: user.email || "",
+        department: user.department || "",
+        designation: user.designation || "",
+        role: user.role || "",
       });
-      console.log('FormData set in Settings:', formData);
-      setAvatarUrl(user.profilePicture ? `${process.env.URL}/${user.profilePicture}` : null);
+      console.log("FormData set in Settings:", formData);
+      setAvatarUrl(
+        user.profilePicture ? `${process.env.URL}/${user.profilePicture}` : null
+      );
     }
   }, [user]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prevData => ({
+    setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
@@ -76,14 +78,14 @@ export function Settings() {
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setPasswordData(prevData => ({
+    setPasswordData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData(prevData => ({
+    setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
@@ -91,9 +93,9 @@ export function Settings() {
 
   const handleSave = async () => {
     try {
-      console.log('Updating profile with data:', formData);
+      console.log("Updating profile with data:", formData);
       const response = await updateProfile(formData);
-      console.log('Profile update response:', response);
+      console.log("Profile update response:", response);
       if (response.success) {
         await updateAuthProfile(response.user);
         toast({
@@ -101,45 +103,56 @@ export function Settings() {
           description: "Your profile has been updated successfully.",
         });
       } else {
-        throw new Error(response.error || 'Failed to update profile');
+        throw new Error(response.error || "Failed to update profile");
       }
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error("Error updating profile:", error);
       toast({
         title: "Update failed",
-        description: "There was an error updating your profile. Please try again.",
+        description:
+          "There was an error updating your profile. Please try again.",
         variant: "destructive",
       });
     }
   };
 
-  const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+  const handleAvatarChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
     if (file) {
-      setIsUploading(true)
+      setIsUploading(true);
       try {
         const formData = new FormData();
-        formData.append('profilePicture', file);
-        const response = await api.post('/auth/update-profile-picture', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        formData.append("profilePicture", file);
+        const response = await api.post(
+          "/auth/update-profile-picture",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
         if (response.data.success) {
           const newAvatarUrl = `${process.env.API_URL}/${response.data.profilePicture}`;
           setAvatarUrl(newAvatarUrl);
-          await updateAuthProfile({ ...user, profilePicture: response.data.profilePicture });
+          await updateAuthProfile({
+            ...user,
+            profilePicture: response.data.profilePicture,
+          });
           toast({
             title: "Profile picture updated",
             description: "Your profile picture has been updated successfully.",
           });
         }
       } catch (error) {
-        console.error('Error updating profile picture:', error);
+        console.error("Error updating profile picture:", error);
         toast({
           title: "Update failed",
-          description: "There was an error updating your profile picture. Please try again.",
+          description:
+            "There was an error updating your profile picture. Please try again.",
           variant: "destructive",
         });
       } finally {
@@ -160,30 +173,34 @@ export function Settings() {
     }
 
     try {
-      console.log('Changing password with data:', passwordData);
-      const response = await api.put('/auth/change-password', {
-        email: user?.email,
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword,
-      }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+      console.log("Changing password with data:", passwordData);
+      const response = await api.put(
+        "/auth/change-password",
+        {
+          email: user?.email,
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
         },
-      });
-       
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
       if (response.data.success) {
         toast({
           title: "Success",
           description: "Password updated successfully",
         });
         setPasswordData({
-          currentPassword: '',
-          newPassword: '',
-          confirmPassword: '',
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
         });
       }
     } catch (error) {
-      console.error('Error updating password:', error);
+      console.error("Error updating password:", error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -203,14 +220,21 @@ export function Settings() {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <TabsTrigger value="integrations" disabled className="relative cursor-not-allowed opacity-50">
+                <TabsTrigger
+                  value="integrations"
+                  disabled
+                  className="relative cursor-not-allowed opacity-50"
+                >
                   <span className="flex items-center gap-1">
                     Integrations
                     <AlertCircle className="h-4 w-4" />
                   </span>
                 </TabsTrigger>
               </TooltipTrigger>
-              <TooltipContent side="bottom" className="bg-black text-white p-2 rounded shadow-lg">
+              <TooltipContent
+                side="bottom"
+                className="bg-black text-white p-2 rounded shadow-lg"
+              >
                 <p className="text-sm">Coming Soon! 🚀</p>
               </TooltipContent>
             </Tooltip>
@@ -232,7 +256,13 @@ export function Settings() {
                     {avatarUrl ? (
                       <AvatarImage src={avatarUrl} alt={formData.name} />
                     ) : (
-                      <AvatarFallback>{formData.name.split(' ').map(n => n[0]).join('').toUpperCase()}</AvatarFallback>
+                      <AvatarFallback>
+                        {formData.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .toUpperCase()}
+                      </AvatarFallback>
                     )}
                   </Avatar>
                   <label
@@ -284,13 +314,15 @@ export function Settings() {
                   <Label htmlFor="department">Department</Label>
                   <Select
                     value={formData.department}
-                    onValueChange={(value) => handleSelectChange('department', value)}
+                    onValueChange={(value) =>
+                      handleSelectChange("department", value)
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select department" />
                     </SelectTrigger>
                     <SelectContent>
-                      {departments.departments.map(department => (
+                      {departments.departments.map((department) => (
                         <SelectItem key={department} value={department}>
                           {department}
                         </SelectItem>
@@ -311,7 +343,7 @@ export function Settings() {
                   <Label htmlFor="role">Role</Label>
                   <Select
                     value={formData.role}
-                    onValueChange={(value) => handleSelectChange('role', value)}
+                    onValueChange={(value) => handleSelectChange("role", value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select role" />
@@ -350,7 +382,7 @@ export function Settings() {
                     type="password"
                     placeholder="Enter your current password"
                     autoComplete="current-password"
-                    className='w-[350px]'
+                    className="w-[350px]"
                     value={passwordData.currentPassword}
                     onChange={handlePasswordChange}
                   />
@@ -363,7 +395,7 @@ export function Settings() {
                     type="password"
                     placeholder="Enter your new password"
                     autoComplete="new-password"
-                    className='w-[350px]'
+                    className="w-[350px]"
                     value={passwordData.newPassword}
                     onChange={handlePasswordChange}
                   />
@@ -376,12 +408,14 @@ export function Settings() {
                     type="password"
                     placeholder="Confirm your new password"
                     autoComplete="new-password"
-                    className='w-[350px]'
+                    className="w-[350px]"
                     value={passwordData.confirmPassword}
                     onChange={handlePasswordChange}
                   />
                 </div>
-                <Button type="submit" className="w-[150px]">Update Password</Button>
+                <Button type="submit" className="w-[150px]">
+                  Update Password
+                </Button>
               </form>
             </CardContent>
           </Card>
@@ -482,5 +516,5 @@ export function Settings() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

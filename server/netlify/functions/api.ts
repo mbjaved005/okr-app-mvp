@@ -24,6 +24,9 @@ const app = express();
 app.enable("json spaces");
 app.enable("strict routing");
 
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, "client/build")));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
@@ -114,7 +117,7 @@ app.get("/api/auth/test", (req, res) => {
   res.json({ message: "Auth route is working" });
 });
 
-app.use("/api/uploads", (req, res, next) => {
+app.use("/uploads", (req, res, next) => {
   log.info(`Static file requested: ${req.url}`);
   next();
 });
@@ -132,13 +135,17 @@ app.post("/upload", upload.single("profilePicture"), (req, res) => {
 });
 
 // Serve static files
-app.use("/uploads", express.static("server/uploads"));
+app.use("/uploads", express.static("uploads"));
 log.info("Static file serving configured for /uploads directory");
 
-// Handle errors and not found routes
+// Handle errors and not found routes for API
 app.use((req, res, next) => {
-  log.warn(`404 Not Found: ${req.method} ${req.url}`);
-  res.status(404).send("Page not found.");
+  if (req.originalUrl.startsWith("/api")) {
+    log.warn(`404 Not Found: ${req.method} ${req.url}`);
+    res.status(404).send("Page not found.");
+  } else {
+    next();
+  }
 });
 
 app.use((err, req, res, next) => {

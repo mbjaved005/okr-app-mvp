@@ -1,17 +1,17 @@
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 import {
   Sheet,
   SheetContent,
@@ -20,7 +20,7 @@ import {
   SheetTitle,
   SheetTrigger,
   SheetFooter,
-} from "@/components/ui/sheet"
+} from "@/components/ui/sheet";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +30,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 import {
   Dialog,
   DialogContent,
@@ -38,277 +38,286 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { Filter, Search, Trash2, Edit2, RotateCcw } from "lucide-react"
-import { Separator } from "@/components/ui/separator"
-import { Badge } from "@/components/ui/badge"
-import { useToast } from "@/hooks/useToast"
+} from "@/components/ui/dialog";
+import { Filter, Search, Trash2, Edit2, RotateCcw } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/useToast";
 import {
   getManagementUsers,
   updateUserRole,
   deleteUser,
   bulkUpdateUserRoles,
   bulkDeleteUsers,
-} from "@/api/userManagement"
-import { getOKRs } from '@/api/okr'
-import { useAuth } from "@/contexts/AuthContext"
-import departmentsData from '@/data/departments.json'
+} from "@/api/userManagement";
+import { getOKRs } from "@/api/okr";
+import { useAuth } from "@/contexts/AuthContext";
+import departmentsData from "@/data/departments.json";
 
 type User = {
-  id: string
-  fullName: string
-  email: string
-  department: string
-  designation: string
-  role: string
-}
+  id: string;
+  fullName: string;
+  email: string;
+  department: string;
+  designation: string;
+  role: string;
+};
 
 type RoleUpdate = {
-  userId: string
-  role: string
-}
+  userId: string;
+  role: string;
+};
 
 export function UserManagement() {
-  const [users, setUsers] = useState<User[]>([])
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([])
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([])
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
+  const [users, setUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState({
     department: "all",
     designation: "all",
-    role: "all"
-  })
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [isBulkEditDialogOpen, setIsBulkEditDialogOpen] = useState(false)
-  const [selectedRole, setSelectedRole] = useState("")
-  const [userToEdit, setUserToEdit] = useState<User | null>(null)
-  const [isResetting, setIsResetting] = useState(false)
-  const [roleUpdates, setRoleUpdates] = useState<RoleUpdate[]>([])
-  const { toast } = useToast()
-  const { user: loggedInUser } = useAuth()
+    role: "all",
+  });
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isBulkEditDialogOpen, setIsBulkEditDialogOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState("");
+  const [userToEdit, setUserToEdit] = useState<User | null>(null);
+  const [isResetting, setIsResetting] = useState(false);
+  const [roleUpdates, setRoleUpdates] = useState<RoleUpdate[]>([]);
+  const { toast } = useToast();
+  const { user: loggedInUser } = useAuth();
 
   useEffect(() => {
-    fetchUsers()
-  }, [])
+    fetchUsers();
+  }, []);
 
   useEffect(() => {
-    const filtered = users.filter(user => {
-      const matchesSearch = !searchTerm ||
-        (user.fullName && user.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (user.department && user.department.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (user.designation && user.designation.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (user.role && user.role.toLowerCase().includes(searchTerm.toLowerCase()));
+    const filtered = users.filter((user) => {
+      const matchesSearch =
+        !searchTerm ||
+        (user.fullName &&
+          user.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (user.email &&
+          user.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (user.department &&
+          user.department.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (user.designation &&
+          user.designation.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (user.role &&
+          user.role.toLowerCase().includes(searchTerm.toLowerCase()));
 
-      const matchesDepartment = filters.department === "all" ||
-        user.department === filters.department;
+      const matchesDepartment =
+        filters.department === "all" || user.department === filters.department;
 
-      const matchesDesignation = filters.designation === "all" ||
+      const matchesDesignation =
+        filters.designation === "all" ||
         user.designation === filters.designation;
 
-      const matchesRole = filters.role === "all" ||
-        user.role === filters.role;
+      const matchesRole = filters.role === "all" || user.role === filters.role;
 
-      return matchesSearch && matchesDepartment && matchesDesignation && matchesRole;
+      return (
+        matchesSearch && matchesDepartment && matchesDesignation && matchesRole
+      );
     });
     setFilteredUsers(filtered);
   }, [searchTerm, filters, users]);
 
   useEffect(() => {
     // Initialize role updates when selected users change
-    const updates = selectedUsers.map(userId => ({
+    const updates = selectedUsers.map((userId) => ({
       userId,
-      role: users.find(user => user.id === userId)?.role || 'Employee'
-    }))
-    setRoleUpdates(updates)
-  }, [selectedUsers, users])
+      role: users.find((user) => user.id === userId)?.role || "Employee",
+    }));
+    setRoleUpdates(updates);
+  }, [selectedUsers, users]);
 
   const fetchUsers = async () => {
     try {
-      const response = await getManagementUsers()
-      setUsers(response.users)
-      setFilteredUsers(response.users)
+      const response = await getManagementUsers();
+      setUsers(response.users);
+      setFilteredUsers(response.users);
     } catch (error) {
-      console.error("Error fetching users:", error)
+      console.error("Error fetching users:", error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to fetch users",
-      })
+      });
     }
-  }
+  };
 
   const fetchOKRs = async () => {
     try {
       const okrs = await getOKRs();
-      // Update the state with the fetched OKRs
-      // Assuming there's a state variable for OKRs, e.g., setOKRs
-      // setOKRs(okrs);
     } catch (error) {
-      console.error('Error fetching OKRs:', error);
+      console.error("Error fetching OKRs:", error);
       toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to fetch OKRs',
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch OKRs",
       });
     }
-  }
+  };
 
   const handleEditUser = (user: User) => {
-    setUserToEdit(user)
-    setSelectedRole(user.role)
-    setIsEditDialogOpen(true)
-  }
+    setUserToEdit(user);
+    setSelectedRole(user.role);
+    setIsEditDialogOpen(true);
+  };
 
   const handleUpdateRole = async () => {
     try {
-      await updateUserRole(userToEdit!.id, selectedRole)
-      const updatedUsers = users.map(user =>
+      await updateUserRole(userToEdit!.id, selectedRole);
+      const updatedUsers = users.map((user) =>
         user.id === userToEdit!.id ? { ...user, role: selectedRole } : user
-      )
-      setUsers(updatedUsers)
+      );
+      setUsers(updatedUsers);
       toast({
         title: "Success",
         description: "User role updated successfully",
-      })
-      setIsEditDialogOpen(false)
+      });
+      setIsEditDialogOpen(false);
     } catch (error) {
-      console.error("Error updating user role:", error)
+      console.error("Error updating user role:", error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to update user role",
-      })
+      });
     }
-  }
+  };
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      await deleteUser(userId)
-      const updatedUsers = users.filter(user => user.id !== userId)
-      setUsers(updatedUsers)
+      await deleteUser(userId);
+      const updatedUsers = users.filter((user) => user.id !== userId);
+      setUsers(updatedUsers);
       toast({
         title: "Success",
         description: "User deleted successfully",
-      })
+      });
       await fetchOKRs(); // Refetch OKRs after deletion
     } catch (error) {
-      console.error("Error deleting user:", error)
+      console.error("Error deleting user:", error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to delete user",
-      })
+      });
     }
-  }
+  };
 
   const handleBulkUpdateRoles = async () => {
     try {
-      await bulkUpdateUserRoles(roleUpdates)
-      const updatedUsers = users.map(user => {
-        const update = roleUpdates.find(u => u.userId === user.id)
-        return update ? { ...user, role: update.role } : user
-      })
-      setUsers(updatedUsers)
-      setSelectedUsers([])
+      await bulkUpdateUserRoles(roleUpdates);
+      const updatedUsers = users.map((user) => {
+        const update = roleUpdates.find((u) => u.userId === user.id);
+        return update ? { ...user, role: update.role } : user;
+      });
+      setUsers(updatedUsers);
+      setSelectedUsers([]);
       toast({
         title: "Success",
         description: "User roles updated successfully",
-      })
-      setIsBulkEditDialogOpen(false)
+      });
+      setIsBulkEditDialogOpen(false);
     } catch (error) {
-      console.error("Error updating user roles:", error)
+      console.error("Error updating user roles:", error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to update user roles",
-      })
+      });
     }
-  }
+  };
 
   const handleBulkDelete = async () => {
     try {
-      await bulkDeleteUsers(selectedUsers)
-      const updatedUsers = users.filter(user => !selectedUsers.includes(user.id))
-      setUsers(updatedUsers)
-      setSelectedUsers([])
+      await bulkDeleteUsers(selectedUsers);
+      const updatedUsers = users.filter(
+        (user) => !selectedUsers.includes(user.id)
+      );
+      setUsers(updatedUsers);
+      setSelectedUsers([]);
       toast({
         title: "Success",
         description: "Users deleted successfully",
-      })
+      });
       await fetchOKRs(); // Refetch OKRs after bulk deletion
-      setIsBulkDeleteDialogOpen(false)
+      setIsBulkDeleteDialogOpen(false);
     } catch (error) {
-      console.error("Error deleting users:", error)
+      console.error("Error deleting users:", error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to delete users",
-      })
+      });
     }
-  }
+  };
 
   const handleSelectUser = (userId: string) => {
     if (userId === loggedInUser?.id) return; // Do not toggle selection for the logged-in user
     console.log(`Toggling selection for user ID: ${userId}`);
-    setSelectedUsers(prev => {
+    setSelectedUsers((prev) => {
       const newSelection = prev.includes(userId)
-        ? prev.filter(id => id !== userId)
+        ? prev.filter((id) => id !== userId)
         : [...prev, userId];
       console.log(`New selected users: ${newSelection}`);
       return newSelection;
     });
-  }
+  };
 
   const handleSelectAllUsers = () => {
-    const selectableUsers = filteredUsers.filter(user => user.id !== loggedInUser?.id);
+    const selectableUsers = filteredUsers.filter(
+      (user) => user.id !== loggedInUser?.id
+    );
     if (selectedUsers.length === selectableUsers.length) {
       setSelectedUsers([]); // Deselect all if all are selected
     } else {
-      setSelectedUsers(selectableUsers.map(user => user.id)); // Select all except the logged-in user
+      setSelectedUsers(selectableUsers.map((user) => user.id)); // Select all except the logged-in user
     }
-  }
+  };
 
   const handleUpdateIndividualRole = (userId: string, role: string) => {
-    setRoleUpdates(prev =>
-      prev.map(update =>
+    setRoleUpdates((prev) =>
+      prev.map((update) =>
         update.userId === userId ? { ...update, role } : update
       )
-    )
-  }
+    );
+  };
 
   const resetFilters = async () => {
-    setIsResetting(true)
+    setIsResetting(true);
     setTimeout(() => {
       setFilters({
         department: "all",
         designation: "all",
-        role: "all"
-      })
-      setSearchTerm("")
-      setIsResetting(false)
-      setIsFilterOpen(false)
-    }, 500)
-  }
+        role: "all",
+      });
+      setSearchTerm("");
+      setIsResetting(false);
+      setIsFilterOpen(false);
+    }, 500);
+  };
 
-  const designations = [...new Set(users.map(user => user.designation))]
-  const roles = [...new Set(users.map(user => user.role))]
+  const designations = [...new Set(users.map((user) => user.designation))];
+  const roles = [...new Set(users.map((user) => user.role))];
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case "Admin":
-        return "bg-blue-100 text-blue-700"
+        return "bg-blue-100 text-blue-700";
       case "Manager":
-        return "bg-green-100 text-green-700"
+        return "bg-green-100 text-green-700";
       case "Employee":
-        return "bg-yellow-100 text-yellow-700"
+        return "bg-yellow-100 text-yellow-700";
       default:
-        return "bg-gray-100 text-gray-700"
+        return "bg-gray-100 text-gray-700";
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -359,12 +368,15 @@ export function UserManagement() {
             <Button variant="outline" className="relative">
               <Filter className="mr-2 h-4 w-4" />
               Filters
-              {Object.values(filters).some(value => value !== "all") && (
+              {Object.values(filters).some((value) => value !== "all") && (
                 <Badge
                   variant="secondary"
                   className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-blue-100 text-blue-700"
                 >
-                  {Object.values(filters).filter(value => value !== "all").length}
+                  {
+                    Object.values(filters).filter((value) => value !== "all")
+                      .length
+                  }
                 </Badge>
               )}
             </Button>
@@ -384,7 +396,7 @@ export function UserManagement() {
                   <Select
                     value={filters.department}
                     onValueChange={(value) =>
-                      setFilters(prev => ({ ...prev, department: value }))
+                      setFilters((prev) => ({ ...prev, department: value }))
                     }
                   >
                     <SelectTrigger>
@@ -405,7 +417,7 @@ export function UserManagement() {
                   <Select
                     value={filters.designation}
                     onValueChange={(value) =>
-                      setFilters(prev => ({ ...prev, designation: value }))
+                      setFilters((prev) => ({ ...prev, designation: value }))
                     }
                   >
                     <SelectTrigger>
@@ -426,7 +438,7 @@ export function UserManagement() {
                   <Select
                     value={filters.role}
                     onValueChange={(value) =>
-                      setFilters(prev => ({ ...prev, role: value }))
+                      setFilters((prev) => ({ ...prev, role: value }))
                     }
                   >
                     <SelectTrigger>
@@ -448,14 +460,19 @@ export function UserManagement() {
               <Button
                 onClick={resetFilters}
                 className={`w-full bg-blue-500 text-white hover:bg-blue-600 ${
-                  isResetting ? 'animate-pulse' : ''
+                  isResetting ? "animate-pulse" : ""
                 }`}
-                disabled={isResetting || Object.values(filters).every(value => value === "all")}
+                disabled={
+                  isResetting ||
+                  Object.values(filters).every((value) => value === "all")
+                }
               >
                 <div className="relative flex items-center justify-center gap-2">
-                  <RotateCcw className={`h-4 w-4 transition-transform duration-500 ${
-                    isResetting ? 'animate-spin' : ''
-                  }`} />
+                  <RotateCcw
+                    className={`h-4 w-4 transition-transform duration-500 ${
+                      isResetting ? "animate-spin" : ""
+                    }`}
+                  />
                   Reset Filters
                 </div>
               </Button>
@@ -470,9 +487,16 @@ export function UserManagement() {
             <CardTitle>Users</CardTitle>
             {filteredUsers.length > 0 && (
               <div className="flex items-center gap-2">
-                <Label className="text-sm" htmlFor="select-all-checkbox">Select All</Label>
+                <Label className="text-sm" htmlFor="select-all-checkbox">
+                  Select All
+                </Label>
                 <Checkbox
-                  checked={selectedUsers.length === filteredUsers.filter(user => user.id !== loggedInUser?.id).length && filteredUsers.length > 0}
+                  checked={
+                    selectedUsers.length ===
+                      filteredUsers.filter(
+                        (user) => user.id !== loggedInUser?.id
+                      ).length && filteredUsers.length > 0
+                  }
                   onCheckedChange={handleSelectAllUsers}
                   aria-label="Select all users"
                 />
@@ -497,7 +521,9 @@ export function UserManagement() {
                     />
                     <div>
                       <h3 className="font-medium">{user.fullName}</h3>
-                      <p className="text-sm text-muted-foreground">{user.email}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {user.email}
+                      </p>
                       <div className="flex gap-2 mt-1">
                         <Badge variant="secondary">{user.department}</Badge>
                         <Badge variant="outline">{user.designation}</Badge>
@@ -531,7 +557,9 @@ export function UserManagement() {
               ))
             ) : (
               <div className="text-center py-8">
-                <p className="text-lg font-medium text-muted-foreground">No Users were found</p>
+                <p className="text-lg font-medium text-muted-foreground">
+                  No Users were found
+                </p>
               </div>
             )}
           </div>
@@ -549,10 +577,7 @@ export function UserManagement() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label>Role</Label>
-              <Select
-                value={selectedRole}
-                onValueChange={setSelectedRole}
-              >
+              <Select value={selectedRole} onValueChange={setSelectedRole}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
@@ -565,7 +590,10 @@ export function UserManagement() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditDialogOpen(false)}
+            >
               Cancel
             </Button>
             <Button onClick={handleUpdateRole}>Update Role</Button>
@@ -573,7 +601,10 @@ export function UserManagement() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isBulkEditDialogOpen} onOpenChange={setIsBulkEditDialogOpen}>
+      <Dialog
+        open={isBulkEditDialogOpen}
+        onOpenChange={setIsBulkEditDialogOpen}
+      >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Update User Roles</DialogTitle>
@@ -585,17 +616,26 @@ export function UserManagement() {
             <ScrollArea className="h-[400px] pr-4">
               <div className="space-y-4">
                 {selectedUsers.map((userId) => {
-                  const user = users.find(u => u.id === userId)
-                  const currentRole = roleUpdates.find(u => u.userId === userId)?.role
+                  const user = users.find((u) => u.id === userId);
+                  const currentRole = roleUpdates.find(
+                    (u) => u.userId === userId
+                  )?.role;
                   return (
-                    <div key={userId} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div
+                      key={userId}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
                       <div>
                         <p className="font-medium">{user?.fullName}</p>
-                        <p className="text-sm text-muted-foreground">{user?.email}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {user?.email}
+                        </p>
                       </div>
                       <Select
                         value={currentRole}
-                        onValueChange={(value) => handleUpdateIndividualRole(userId, value)}
+                        onValueChange={(value) =>
+                          handleUpdateIndividualRole(userId, value)
+                        }
                       >
                         <SelectTrigger className="w-[150px]">
                           <SelectValue placeholder="Select role" />
@@ -607,13 +647,16 @@ export function UserManagement() {
                         </SelectContent>
                       </Select>
                     </div>
-                  )
+                  );
                 })}
               </div>
             </ScrollArea>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsBulkEditDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsBulkEditDialogOpen(false)}
+            >
               Cancel
             </Button>
             <Button onClick={handleBulkUpdateRoles}>Update Roles</Button>
@@ -621,13 +664,16 @@ export function UserManagement() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={isBulkDeleteDialogOpen} onOpenChange={setIsBulkDeleteDialogOpen}>
+      <AlertDialog
+        open={isBulkDeleteDialogOpen}
+        onOpenChange={setIsBulkDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete {selectedUsers.length} selected users.
-              This action cannot be undone.
+              This will permanently delete {selectedUsers.length} selected
+              users. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -642,5 +688,5 @@ export function UserManagement() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
+  );
 }

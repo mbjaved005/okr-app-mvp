@@ -1,11 +1,14 @@
-const { randomUUID } = require('crypto');
+const { randomUUID } = require("crypto");
 
-const User = require('../models/user.js');
-const OKR = require('../models/okr.js');
-const { generatePasswordHash, validatePassword } = require('../utils/password.js');
-const logger = require('../utils/log.js');
+const User = require("../models/user.js");
+const OKR = require("../models/okr.js");
+const {
+  generatePasswordHash,
+  validatePassword,
+} = require("../utils/password.js");
+const logger = require("../utils/log.js");
 
-const log = logger('services/user');
+const log = logger("services/user");
 
 class UserService {
   static async list() {
@@ -37,7 +40,10 @@ class UserService {
 
   static async update(id, data) {
     try {
-      return User.findOneAndUpdate({ _id: id }, data, { new: true, upsert: false });
+      return User.findOneAndUpdate({ _id: id }, data, {
+        new: true,
+        upsert: false,
+      });
     } catch (err) {
       log.error(`Database error while updating user ${id}: ${err}`);
       throw `Database error while updating user ${id}: ${err}`;
@@ -47,7 +53,7 @@ class UserService {
   static async delete(id) {
     try {
       const result = await User.deleteOne({ _id: id }).exec();
-      return (result.deletedCount === 1);
+      return result.deletedCount === 1;
     } catch (err) {
       log.error(`Database error while deleting user ${id}: ${err}`);
       throw `Database error while deleting user ${id}: ${err}`;
@@ -65,15 +71,28 @@ class UserService {
       }
 
       // Delete "Individual" OKRs created by the user
-      const deletedOKRs = await OKR.deleteMany({ createdBy: user.name, category: 'Individual' });
-      log.info(`Deleted ${deletedOKRs.deletedCount} Individual OKRs for user: ${user.name}`);
+      log.info(
+        `Attempting to delete Individual OKRs created by user: ${userId}`
+      );
+      const deletedOKRs = await OKR.deleteMany({
+        createdBy: userId,
+        category: "Individual",
+      });
+      log.info(
+        `Deleted ${deletedOKRs.deletedCount} Individual OKRs for user: ${userId}`
+      );
 
       // Update "Team" OKRs to remove the user from owners
+      log.info(
+        `Attempting to update Team OKRs to remove user: ${user.name} from owners`
+      );
       const updatedOKRs = await OKR.updateMany(
-        { owners: user.name, category: 'Team' },
+        { owners: user.name, category: "Team" },
         { $pull: { owners: user.name } }
       );
-      log.info(`Updated ${updatedOKRs.modifiedCount} Team OKRs to remove user: ${user.name}`);
+      log.info(
+        `Updated ${updatedOKRs.modifiedCount} Team OKRs to remove user: ${user.name}`
+      );
 
       // Delete the user
       await User.findByIdAndDelete(userId);
@@ -81,14 +100,19 @@ class UserService {
       log.info(`Completed deletion process for user: ${userId}`);
       return true;
     } catch (err) {
-      log.error(`Error while deleting user and handling OKRs: ${err.message}`, err);
-      throw new Error(`Error while deleting user and handling OKRs: ${err.message}`);
+      log.error(
+        `Error while deleting user and handling OKRs: ${err.message}`,
+        err
+      );
+      throw new Error(
+        `Error while deleting user and handling OKRs: ${err.message}`
+      );
     }
   }
 
   static async authenticateWithPassword(email, password) {
-    if (!email) throw 'Email is required';
-    if (!password) throw 'Password is required';
+    if (!email) throw "Email is required";
+    if (!password) throw "Password is required";
 
     try {
       const user = await User.findOne({ email }).exec();
@@ -100,7 +124,9 @@ class UserService {
       const updatedUser = await user.save();
       return updatedUser;
     } catch (err) {
-      log.error(`Database error while authenticating user ${email} with password: ${err}`);
+      log.error(
+        `Database error while authenticating user ${email} with password: ${err}`
+      );
       throw `Database error while authenticating user ${email} with password: ${err}`;
     }
   }
@@ -129,16 +155,24 @@ class UserService {
     }
   }
 
-  static async createUser({ email, password, name, role, designation, department, profilePicture }) {
-    if (!email) throw 'Email is required';
-    if (!password) throw 'Password is required';
-    if (!name) throw 'Name is required';
-    if (!role) throw 'Role is required';
-    if (!designation) throw 'Designation is required';
-    if (!department) throw 'Department is required';
+  static async createUser({
+    email,
+    password,
+    name,
+    role,
+    designation,
+    department,
+    profilePicture,
+  }) {
+    if (!email) throw "Email is required";
+    if (!password) throw "Password is required";
+    if (!name) throw "Name is required";
+    if (!role) throw "Role is required";
+    if (!designation) throw "Designation is required";
+    if (!department) throw "Department is required";
 
     const existingUser = await UserService.getByEmail(email);
-    if (existingUser) throw 'User with this email already exists';
+    if (existingUser) throw "User with this email already exists";
 
     const hash = await generatePasswordHash(password);
 
@@ -164,7 +198,7 @@ class UserService {
   }
 
   static async setPassword(user, password) {
-    if (!password) throw 'Password is required';
+    if (!password) throw "Password is required";
     user.password = await generatePasswordHash(password); // eslint-disable-line
 
     try {
