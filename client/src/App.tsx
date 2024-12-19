@@ -1,18 +1,24 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom"
-import { ThemeProvider } from "./components/ui/theme-provider"
-import { Toaster } from "./components/ui/toaster"
-import { AuthProvider } from "./contexts/AuthContext"
-import { Login } from "./pages/Login"
-import { Register } from "./pages/Register"
-import { Dashboard } from "./pages/Dashboard"
-import { OKRs } from "./pages/OKRs"
-import { Reports } from "./pages/Reports"
-import { Teams } from "./pages/Teams"
-import { Settings } from "./pages/Settings"
-import { UserManagement } from "./pages/UserManagement"
-import { Layout } from "./components/Layout"
-import { ProtectedRoute } from "./components/ProtectedRoute"
-import { useEffect } from "react"
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
+import { ThemeProvider } from "./components/ui/theme-provider";
+import { Toaster } from "./components/ui/toaster";
+import { AuthProvider } from "./contexts/AuthContext";
+import { Login } from "./pages/Login";
+import { Register } from "./pages/Register";
+import { Dashboard } from "./pages/Dashboard";
+import { OKRs } from "./pages/OKRs";
+import { Reports } from "./pages/Reports";
+import { Teams } from "./pages/Teams";
+import { Settings } from "./pages/Settings";
+import { UserManagement } from "./pages/UserManagement";
+import { OKRDetail } from "./pages/OKRDetail";
+import { Layout } from "./components/Layout";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { useEffect } from "react";
 
 function RouteLogger() {
   const location = useLocation();
@@ -33,13 +39,17 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/" element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }>
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
+              }
+            >
               <Route index element={<Dashboard />} />
               <Route path="okrs" element={<OKRs />} />
+              <Route path="okrs/:id" element={<OKRDetail />} />
               <Route path="teams" element={<Teams />} />
               <Route path="reports" element={<Reports />} />
               <Route path="settings" element={<Settings />} />
@@ -51,7 +61,7 @@ function App() {
         </Router>
       </ThemeProvider>
     </AuthProvider>
-  )
+  );
 }
 
 function NotFound() {

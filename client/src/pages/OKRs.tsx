@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Filter, Search, RotateCcw, Edit, Trash2 } from "lucide-react";
+import {
+  Plus,
+  Filter,
+  Search,
+  RotateCcw,
+  Edit,
+  Trash2,
+  Eye,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -48,6 +56,7 @@ import { getQuarter } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/useToast";
 import departments from "@/data/departments.json";
+import { useNavigate } from "react-router-dom";
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -97,6 +106,7 @@ const getStatusFromProgress = (progress: number) => {
 };
 
 export function OKRs() {
+  const navigate = useNavigate();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedOKR, setSelectedOKR] = useState(null);
@@ -135,7 +145,7 @@ export function OKRs() {
   const { toast } = useToast();
 
   const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
-  const loggedInUserId = loggedInUser.id; // Assuming user ID is stored as 'id'
+  const loggedInUserId = loggedInUser.id;
 
   useEffect(() => {
     const fetchOKRs = async () => {
@@ -534,6 +544,14 @@ export function OKRs() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">{okr.title}</CardTitle>
                   <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => navigate(`/okrs/${okr._id}`)}
+                      className="hover:bg-blue-50 dark:hover:bg-blue-900"
+                    >
+                      <Eye className="h-4 w-4 text-blue-500" />
+                    </Button>
                     {(okr.owners.includes(loggedInUserId) ||
                       okr.createdBy === loggedInUserId) && (
                       <>
@@ -663,7 +681,7 @@ export function OKRs() {
       <CreateOKRDialog
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
-        onOKRUpdated={handleOKRUpdated} // Pass the function to refresh OKRs
+        onOKRUpdated={handleOKRUpdated}
       />
 
       {selectedOKR && (
