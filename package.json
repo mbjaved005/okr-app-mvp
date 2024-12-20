@@ -2,6 +2,7 @@
   "name": "okr-app-emu",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "concurrently-install": "concurrently -n \"client,server\" \"npm run client-install\" \"npm run server-install\"",
     "test": "echo \"Error: no test specified\" && exit 1",
