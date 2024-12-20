@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -57,6 +56,8 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/useToast";
 import departments from "@/data/departments.json";
 import { useNavigate } from "react-router-dom";
+import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -110,20 +111,20 @@ export function OKRs() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedOKR, setSelectedOKR] = useState(null);
-  const [okrs, setOkrs] = useState<
-    {
-      id: string;
-      title: string;
-      description: string;
-      department: string;
-      category: string;
-      createdBy: string;
-      owners: string[];
-      startDate: string;
-      endDate: string;
-      progress: number;
-    }[]
-  >([]);
+  interface OKR {
+    _id: string;
+    title: string;
+    description: string;
+    department: string;
+    category: string;
+    startDate: string;
+    endDate: string;
+    createdBy: string;
+    owners: string[];
+    progress: number;
+  }
+
+  const [okrs, setOkrs] = useState<OKR[]>([]);
   const [users, setUsers] = useState<
     { id: string; name: string; email: string }[]
   >([]);
@@ -536,13 +537,34 @@ export function OKRs() {
         </Sheet>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-2">
         {filteredOKRs.length > 0 ? (
           filteredOKRs.map((okr) => (
-            <Card key={okr.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
+            <Card
+              key={okr.id}
+              className="hover:shadow-lg transition-shadow bg-transparent border-none p-1"
+            >
+              <CardHeader className="bg-transparent p-1">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">{okr.title}</CardTitle>
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12">
+                      <CircularProgressbar
+                        value={okr.progress}
+                        text={`${okr.progress}%`}
+                        styles={buildStyles({
+                          textSize: "30px",
+                        })}
+                      />
+                    </div>
+                    <div className="flex flex-col justify-between h-12">
+                      <CardTitle className="text-lg text-foreground">
+                        {okr.title}
+                      </CardTitle>
+                      <p className="font-lg text-foreground">
+                        {okr.department} | {okr.category}
+                      </p>
+                    </div>
+                  </div>
                   <div className="flex items-center gap-2">
                     <Button
                       variant="ghost"
@@ -591,27 +613,12 @@ export function OKRs() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="bg-transparent p-1">
+                <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">
                     {okr.description}
                   </p>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="font-medium">Overall Progress</span>
-                      <span className="font-medium">{okr.progress}%</span>
-                    </div>
-                    <Progress value={okr.progress} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Department</p>
-                      <p className="font-medium">{okr.department}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Category</p>
-                      <p className="font-medium">{okr.category}</p>
-                    </div>
+                  <div className="grid grid-cols-4 gap-3 text-sm">
                     <div>
                       <p className="text-muted-foreground">Start Date</p>
                       <p className="font-medium">
@@ -629,7 +636,7 @@ export function OKRs() {
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger>
-                            <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-medium text-blue-600">
+                            <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-background text-sm font-medium text-blue-600">
                               {getUserInitialsById(okr.createdBy)}
                             </div>
                           </TooltipTrigger>
@@ -649,7 +656,7 @@ export function OKRs() {
                             <TooltipProvider key={index}>
                               <Tooltip>
                                 <TooltipTrigger>
-                                  <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-medium text-blue-600 ring-2 ring-white">
+                                  <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-background text-sm font-medium text-blue-600 ring-2 ring-background">
                                     {ownerInitials}
                                   </div>
                                 </TooltipTrigger>
