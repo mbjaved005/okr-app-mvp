@@ -38,7 +38,7 @@ The OKR Tracker App is a web-based application designed to help organizations ma
 - **server/.env**: Contains environment variables like `PORT`, `DATABASE_URL`, `SESSION_SECRET`, and `JWT_SECRET`.
   ```env
   PORT=3000
-  DATABASE_URL=mongodb://localhost:27017/okr-app
+  DATABASE_URL=mongodb://<hostname>:<dbPortNumber>/<dbName>
   SESSION_SECRET="your-session-secret"
   JWT_SECRET="your-jwt-secret"
   ```
@@ -61,8 +61,16 @@ The OKR Tracker App is a web-based application designed to help organizations ma
 - Consider using Docker for containerized deployment.
 
 ## How to Build and Run the Application
-1. Start the development server:
+1. Start the backend server:
    ```bash
+   cd server
    npm run start
    ```
-2. Access the application at `http://localhost:5173`.
+2. The backend server will run on `http://localhost:3000`.
+
+3. Start the frontend client:
+   ```bash
+   cd client
+   npm run dev
+   ```
+4. The frontend client will run on `http://localhost:5173`.

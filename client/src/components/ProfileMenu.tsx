@@ -52,10 +52,6 @@ export function ProfileMenu() {
             <AvatarImage src={profilePictureUrl} alt={user?.name} />
           ) : (
             <AvatarFallback className="bg-blue-100 text-blue-600">
-              {console.log(
-                "Avatar fallback rendering. Initials:",
-                getInitials(user?.name || "")
-              )}
               {getInitials(user?.name || "")}
             </AvatarFallback>
           )}
