@@ -1,5 +1,5 @@
 import api from "./Api";
-import { handleTokenExpiration } from "./utils.ts";
+import { handleTokenExpiration } from "./utils.ts"; // Import the common function
 
 // Get Users List
 // GET /users
@@ -16,7 +16,7 @@ export const getUsers = async () => {
     return response.data;
   } catch (error) {
     console.error("Error fetching users from API:", error.message, error.stack);
-    handleTokenExpiration(error);
+    handleTokenExpiration(error); // Use the common function
     throw error;
   }
 };

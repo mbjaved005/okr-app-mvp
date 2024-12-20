@@ -34,7 +34,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { updateOKR, getOKRById, getOKRs } from "@/api/okr";
+import { updateOKR, getOKRById, getOKRs } from "@/api/okr"; // Add this import
 import { getUsers } from "@/api/users";
 import { useToast } from "@/hooks/useToast";
 import { Plus, Target, Trash2, X, Check, ChevronsUpDown } from "lucide-react";
@@ -635,7 +635,7 @@ export function EditOKRDialog({
             <DialogFooter className="sticky bottom-0 pt-6">
               <Button
                 type="submit"
-                disabled={loading}
+                disabled={loading} // Removed the condition `|| !isDirty`
                 className="bg-blue-500 hover:bg-blue-600 text-white"
               >
                 {loading ? (

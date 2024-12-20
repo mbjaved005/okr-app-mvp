@@ -32,7 +32,7 @@ export const getOKRById = async (id: string) => {
     return response.data;
   } catch (error) {
     console.error("Error fetching OKR by ID:", error);
-    handleTokenExpiration(error);
+    handleTokenExpiration(error); // Use the common function
     throw error;
   }
 };
@@ -63,7 +63,7 @@ export const createOKR = async (data: any) => {
     return response.data;
   } catch (error) {
     console.error("Error creating OKR:", error);
-    handleTokenExpiration(error);
+    handleTokenExpiration(error); // Use the common function
     throw error;
   }
 };
@@ -90,7 +90,7 @@ export const updateOKR = async (id: string, data: any) => {
     return response.data;
   } catch (error) {
     console.error("Error updating OKR:", error);
-    handleTokenExpiration(error);
+    handleTokenExpiration(error); // Use the common function
     throw error;
   }
 };

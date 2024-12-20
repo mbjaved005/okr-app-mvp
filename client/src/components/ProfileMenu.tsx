@@ -34,7 +34,7 @@ export function ProfileMenu() {
   };
 
   const profilePictureUrl = user?.profilePicture
-    ? `${process.env.API_URL}/${user.profilePicture.replace(/\\/g, "/")}`
+    ? `http://localhost:3000/${user.profilePicture.replace(/\\/g, "/")}`
     : undefined;
 
   console.log(

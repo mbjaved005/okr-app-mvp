@@ -64,7 +64,7 @@ export function Settings() {
       console.log("FormData set in Settings:", formData);
       setAvatarUrl(
         user.profilePicture
-          ? `${process.env.API_URL}/${user.profilePicture}`
+          ? `http://localhost:3000/${user.profilePicture}`
           : null
       );
     }
