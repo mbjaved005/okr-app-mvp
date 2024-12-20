@@ -10,6 +10,7 @@ const {
   generatePasswordHash,
 } = require("../utils/password.js");
 const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const router = express.Router();
 const log = logger("api/routes/authRoutes");
 
