@@ -63,7 +63,9 @@ export function Settings() {
       });
       console.log("FormData set in Settings:", formData);
       setAvatarUrl(
-        user.profilePicture ? `${process.env.URL}/${user.profilePicture}` : null
+        user.profilePicture
+          ? `http://localhost:3000/${user.profilePicture}`
+          : null
       );
     }
   }, [user]);
@@ -136,7 +138,7 @@ export function Settings() {
           }
         );
         if (response.data.success) {
-          const newAvatarUrl = `${process.env.API_URL}/${response.data.profilePicture}`;
+          const newAvatarUrl = `http://localhost:3000/${response.data.profilePicture}`;
           setAvatarUrl(newAvatarUrl);
           await updateAuthProfile({
             ...user,

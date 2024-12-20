@@ -34,7 +34,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { createOKR, getOKRs } from "@/api/okr";
+import { createOKR, getOKRs } from "@/api/okr"; // Import the function to get existing OKRs
 import { getUsers } from "@/api/users";
 import { useToast } from "@/hooks/useToast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -223,7 +223,7 @@ export function CreateOKRDialog({
         }
       }
       setLoading(true);
-      await createOKR({ ...data, createdBy: user.id });
+      await createOKR({ ...data, createdBy: user.id }); // Add createdBy field
       toast({
         title: "Success",
         description: "OKR created successfully",

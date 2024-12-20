@@ -215,7 +215,7 @@ export function Teams() {
               <Avatar className="h-12 w-12">
                 {employee.profilePicture ? (
                   <AvatarImage
-                    src={`${process.env.URL}/${employee.profilePicture.replace(
+                    src={`http://localhost:3000/${employee.profilePicture.replace(
                       /\\/g,
                       "/"
                     )}`}

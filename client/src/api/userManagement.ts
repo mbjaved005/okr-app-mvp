@@ -1,5 +1,5 @@
 import api from "./Api";
-import { handleTokenExpiration } from "./utils";
+import { handleTokenExpiration } from "./utils"; // Import the common function
 
 // Get Users List with Role
 export const getManagementUsers = () => {
@@ -16,7 +16,7 @@ export const getManagementUsers = () => {
     })
     .catch((error) => {
       console.error("Error fetching users:", error);
-      handleTokenExpiration(error);
+      handleTokenExpiration(error); // Use the common function
       throw error;
     });
 };
@@ -41,7 +41,7 @@ export const updateUserRole = (userId: string, role: string) => {
     })
     .catch((error) => {
       console.error("Error updating user role:", error);
-      handleTokenExpiration(error);
+      handleTokenExpiration(error); // Use the common function
       throw error;
     });
 };
@@ -62,7 +62,7 @@ export const deleteUser = (userId: string) => {
     })
     .catch((error) => {
       console.error("Error deleting user:", error);
-      handleTokenExpiration(error);
+      handleTokenExpiration(error); // Use the common function
       throw error;
     });
 };
@@ -82,7 +82,7 @@ export const bulkUpdateUserRoles = (
     })
     .catch((error) => {
       console.error("Error in bulk updating user roles:", error);
-      handleTokenExpiration(error);
+      handleTokenExpiration(error); // Use the common function
       throw error;
     });
 };
@@ -98,7 +98,7 @@ export const bulkDeleteUsers = (userIds: string[]) => {
     })
     .catch((error) => {
       console.error("Error in bulk deleting users:", error);
-      handleTokenExpiration(error);
+      handleTokenExpiration(error); // Use the common function
       throw error;
     });
 };

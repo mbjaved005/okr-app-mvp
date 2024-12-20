@@ -1,9 +1,11 @@
 # OKR Tracker App
 
 ## Description
+
 The OKR Tracker App is a web-based application designed to help organizations manage, track, and achieve their Objectives and Key Results (OKRs). It provides a user-friendly interface for creating, editing, assigning, and monitoring OKRs across the organization, facilitating goal alignment and performance tracking.
 
 ## Project Directory Overview
+
 - **client/**: Contains the frontend code, built with React and Vite.
 - **server/**: Contains the backend code, built with Express and MongoDB.
 - **client/src/api/**: Contains API utility functions for frontend-backend communication.
@@ -11,6 +13,7 @@ The OKR Tracker App is a web-based application designed to help organizations ma
 - **server/models/**: Contains Mongoose models for database interaction.
 
 ## Tech Stack
+
 - **Frontend**: React, Vite
 - **Backend**: Express, Node.js
 - **Database**: MongoDB
@@ -19,6 +22,7 @@ The OKR Tracker App is a web-based application designed to help organizations ma
 - **Authentication**: JWT, bcrypt
 
 ## Installation Instructions
+
 1. Clone the repository:
    ```bash
    git clone <repository-url>
@@ -35,20 +39,24 @@ The OKR Tracker App is a web-based application designed to help organizations ma
    ```
 
 ## Configuration Files
+
 - **server/.env**: Contains environment variables like `PORT`, `DATABASE_URL`, `SESSION_SECRET`, and `JWT_SECRET`.
+
   ```env
   PORT=3000
-  DATABASE_URL=mongodb://localhost:27017/okr-app
+  DATABASE_URL=mongodb://<hostname>:<dbPortNumber>/<dbName>
   SESSION_SECRET="your-session-secret"
   JWT_SECRET="your-jwt-secret"
   ```
 
   Create `SESSION_SECRET` and `JWT_SECRET` using this command:
+
   ```bash
   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
   ```
 
 ## Key Features
+
 - User Management: Registration, authentication, and role-based access control.
 - OKR Management: Create, edit, delete, and assign OKRs.
 - Reporting: Generate and export OKR progress reports.
@@ -56,13 +64,23 @@ The OKR Tracker App is a web-based application designed to help organizations ma
 - Notifications: Customizable alerts for OKR updates.
 
 ## Deployment Instructions
+
 - Ensure all environment variables are set correctly in the `.env` file.
 - Use a process manager like PM2 for running the server in production.
 - Consider using Docker for containerized deployment.
 
 ## How to Build and Run the Application
-1. Start the development server:
+
+1. Start the backend server:
    ```bash
+   cd server
    npm run start
    ```
-2. Access the application at `http://localhost:5173`.
+2. The backend server will run on `http://localhost:3000`.
+
+3. Start the frontend client:
+   ```bash
+   cd client
+   npm run dev
+   ```
+4. The frontend client will run on `http://localhost:5173`.
