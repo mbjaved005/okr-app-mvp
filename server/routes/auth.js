@@ -9,7 +9,6 @@ const {
   validatePassword,
   generatePasswordHash,
 } = require("../utils/password.js");
-const netlifyUpload = require("netlify-lambda-upload");
 const { upload } = require("@netlify/functions");
 const router = express.Router();
 const log = logger("api/routes/authRoutes");
