@@ -21,6 +21,7 @@ functions = "server/netlify/functions"
 
 [build.environment]
 NODE_VERSION = "22.11.0"
+USE_NETLIFY_LARGE_MEDIA=true
 
 [context.production.environment]
 NODE_ENV = "production"

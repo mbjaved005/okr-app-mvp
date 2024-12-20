@@ -6,6 +6,7 @@ const multer = require('multer');
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const { validatePassword, generatePasswordHash } = require('../utils/password.js');
+const netlifyUpload = require('netlify-lambda-upload');
 const router = express.Router();
 const log = logger('api/routes/authRoutes');
 
@@ -20,6 +21,7 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
+const uploadMiddleware = process.env.USE_NETLIFY_LARGE_MEDIA === 'true' ? netlifyUpload.single('profilePicture') : upload.single('profilePicture');
 
 router.post('/login', async (req, res) => {
   const sendError = msg => res.status(400).json({ error: msg });
@@ -53,7 +55,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-router.post('/register', upload.single('profilePicture'), async (req, res) => {
+router.post('/register', uploadMiddleware, async (req, res) => {
   log.info('Received registration request');
   try {
     const { name, email, password, role, designation, department } = req.body;
@@ -168,7 +170,7 @@ router.put('/update-profile', requireUser, async (req, res) => {
   }
 });
 
-router.post('/update-profile-picture', requireUser, upload.single('profilePicture'), async (req, res) => {
+router.post('/update-profile-picture', requireUser, uploadMiddleware, async (req, res) => {
   try {
     log.info(`Received profile picture update request for user: ${req.user.email}`);
 
