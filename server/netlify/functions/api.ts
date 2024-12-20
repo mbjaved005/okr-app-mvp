@@ -12,7 +12,8 @@ const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
 const logger = require("../../utils/log");
-const { upload } = require("@netlify/functions");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
 const log = logger("server");
 
@@ -20,6 +21,12 @@ if (!process.env.DATABASE_URL || !process.env.SESSION_SECRET) {
   log.error("Error: DATABASE_URL or SESSION_SECRET variables in .env missing.");
   process.exit(-1);
 }
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const app = express();
 app.enable("json spaces");
@@ -33,21 +40,16 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 // Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "uploads",
+    format: async (req, file) => "png", // supports promises as well
+    public_id: (req, file) => Date.now() + path.extname(file.originalname),
   },
 });
 
-const localUpload = multer({ storage: storage });
-
-const uploadMiddleware =
-  process.env.USE_NETLIFY_LARGE_MEDIA === "true"
-    ? upload.single("profilePicture")
-    : localUpload.single("profilePicture");
+const upload = multer({ storage: storage });
 
 // Middleware for logging requests
 app.use((req, res, next) => {
@@ -129,7 +131,7 @@ app.use("/uploads", (req, res, next) => {
 });
 
 // File upload endpoint
-app.post("/upload", uploadMiddleware, (req, res) => {
+app.post("/upload", upload.single("profilePicture"), (req, res) => {
   log.info("Received file upload request");
   if (req.file) {
     log.info(`File uploaded successfully: ${req.file.path}`);

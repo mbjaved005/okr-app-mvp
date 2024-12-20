@@ -27,6 +27,7 @@ const Teams = () => {
       });
       if (response.data.success) {
         alert('File uploaded successfully');
+        console.log('Cloudinary URL:', response.data.url);
       } else {
         alert('File upload failed');
       }

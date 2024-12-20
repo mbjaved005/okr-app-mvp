@@ -9,25 +9,28 @@ const {
   validatePassword,
   generatePasswordHash,
 } = require("../utils/password.js");
-const { upload } = require("@netlify/functions");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const router = express.Router();
 const log = logger("api/routes/authRoutes");
 
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 // Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "uploads",
+    format: async (req, file) => "png", // supports promises as well
+    public_id: (req, file) => Date.now() + path.extname(file.originalname),
   },
 });
 
-const localUpload = multer({ storage: storage });
-const uploadMiddleware =
-  process.env.USE_NETLIFY_LARGE_MEDIA === "true"
-    ? upload.single("profilePicture")
-    : localUpload.single("profilePicture");
+const upload = multer({ storage: storage });
 
 router.post("/login", async (req, res) => {
   const sendError = (msg) => res.status(400).json({ error: msg });
@@ -63,7 +66,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.post("/register", uploadMiddleware, async (req, res) => {
+router.post("/register", upload.single("profilePicture"), async (req, res) => {
   log.info("Received registration request");
   try {
     const { name, email, password, role, designation, department } = req.body;
@@ -215,7 +218,7 @@ router.put("/update-profile", requireUser, async (req, res) => {
 router.post(
   "/update-profile-picture",
   requireUser,
-  uploadMiddleware,
+  upload.single("profilePicture"),
   async (req, res) => {
     try {
       log.info(
