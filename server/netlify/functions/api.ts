@@ -12,7 +12,7 @@ const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
 const logger = require("../../utils/log");
-const netlifyUpload = require('netlify-lambda-upload');
+const { upload } = require("@netlify/functions");
 
 const log = logger("server");
 
@@ -42,9 +42,12 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: storage });
+const localUpload = multer({ storage: storage });
 
-const uploadMiddleware = process.env.USE_NETLIFY_LARGE_MEDIA === 'true' ? netlifyUpload.single('profilePicture') : upload.single('profilePicture');
+const uploadMiddleware =
+  process.env.USE_NETLIFY_LARGE_MEDIA === "true"
+    ? upload.single("profilePicture")
+    : localUpload.single("profilePicture");
 
 // Middleware for logging requests
 app.use((req, res, next) => {
