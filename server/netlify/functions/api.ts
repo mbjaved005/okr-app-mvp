@@ -4,15 +4,18 @@ const express = require("express");
 const serverless = require("serverless-http");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
-import authRoutes from "../../routes/auth";
-import okrRoutes from "../../routes/okr";
-import userManagementRoutes from "../../routes/userManagement";
-import { authenticateWithToken } from "../../routes/middleware/auth";
+const authRoutes = require("../../routes/auth");
+const okrRoutes = require("../../routes/okr");
+const userManagementRoutes = require("../../routes/userManagement");
+const { authenticateWithToken } = require("../../routes/middleware/auth");
 const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
-const logger = require("../../utils/log");
+const { logger } = require("../../utils/log");
 
+console.log(authRoutes);
+
+console.log("Type of imported logger in api.js:", typeof logger);
 const log = logger("server");
 
 if (!process.env.DATABASE_URL || !process.env.SESSION_SECRET) {

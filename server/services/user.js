@@ -1,14 +1,10 @@
 const { randomUUID } = require("crypto");
-
 const User = require("../models/user.js");
 const OKR = require("../models/okr.js");
-const {
-  generatePasswordHash,
-  validatePassword,
-} = require("../utils/password.js");
-const logger = require("../utils/log.js");
+const { generatePasswordHash, validatePassword } = require("../utils/password");
+import { logger } from "../utils/log";
 
-const log = logger("services/user");
+const log = logger("service/userService");
 
 class UserService {
   static async list() {

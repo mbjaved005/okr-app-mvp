@@ -1,13 +1,18 @@
-const pino = require('pino');
+const winston = require("winston");
 
-const DEFAULT_LOG_LEVEL = process.env.NODE_ENV === "production" ? "info" : "debug";
-const level = process.env.LOG_LEVEL || DEFAULT_LOG_LEVEL;
+console.log("log.js is being executed");
 
-if (!pino.levels.values[level]) {
-  const validLevels = Object.keys(pino.levels.values).join(', ');
-  throw new Error(`Log level must be one of: ${validLevels}`);
+function logger(name) {
+  console.log(`Creating logger for: ${name}`);
+  return winston.createLogger({
+    level: process.env.LOG_LEVEL || "info",
+    format:
+      process.env.NODE_ENV !== "production"
+        ? winston.format.simple()
+        : winston.format.json(),
+    defaultMeta: { service: name },
+    transports: [new winston.transports.Console()],
+  });
 }
 
-const logger = (name) => pino({ name, level });
-
-module.exports = logger;
+module.exports = { logger };

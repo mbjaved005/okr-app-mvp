@@ -5,6 +5,9 @@
     { "path": "./tsconfig.node.json" }
   ],
   "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
     "noEmitOnError": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,

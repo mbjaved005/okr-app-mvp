@@ -1,7 +1,6 @@
 const express = require("express");
 const UserService = require("../services/user.js");
 const { requireUser } = require("./middleware/auth.js");
-const logger = require("../utils/log.js");
 const multer = require("multer");
 const path = require("path");
 const jwt = require("jsonwebtoken");
@@ -9,9 +8,10 @@ const {
   validatePassword,
   generatePasswordHash,
 } = require("../utils/password.js");
-const router = express.Router();
-const log = logger("api/routes/authRoutes");
+import { logger } from "../utils/log";
 
+const log = logger("api/routes/authRoutes");
+const router = express.Router();
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
