@@ -2,7 +2,7 @@ const { randomUUID } = require("crypto");
 const User = require("../models/user.js");
 const OKR = require("../models/okr.js");
 const { generatePasswordHash, validatePassword } = require("../utils/password");
-import { logger } from "../utils/log";
+const { logger } = require("../utils/log.js");
 
 const log = logger("service/userService");
 

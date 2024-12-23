@@ -8,7 +8,7 @@ const {
   validatePassword,
   generatePasswordHash,
 } = require("../utils/password.js");
-import { logger } from "../utils/log";
+const { logger } = require("../utils/log.js");
 
 const log = logger("api/routes/authRoutes");
 const router = express.Router();

@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { User } = require("../../models/user");
-import { logger } from "../../utils/log";
+const { logger } = require("../../utils/log");
 
 const log = logger("middleware/auth");
 

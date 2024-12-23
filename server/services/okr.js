@@ -1,5 +1,5 @@
 const OKR = require('../models/okr');
-const logger = require('../utils/log');
+const { logger } = require("../utils/log.js");
 
 const log = logger('services/okr');
 
