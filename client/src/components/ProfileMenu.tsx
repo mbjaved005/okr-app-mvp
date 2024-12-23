@@ -33,9 +33,8 @@ export function ProfileMenu() {
     navigate("/login");
   };
 
-  const profilePictureUrl = user?.profilePicture
-    ? `${process.env.API_URL}/${user.profilePicture.replace(/\\/g, "/")}`
-    : undefined;
+  console.log("Profile Picture of user?:", user?.profilePicture);
+  const profilePictureUrl = user?.profilePicture || undefined;
 
   console.log(
     "Rendering Avatar. profilePicture:",
@@ -52,10 +51,6 @@ export function ProfileMenu() {
             <AvatarImage src={profilePictureUrl} alt={user?.name} />
           ) : (
             <AvatarFallback className="bg-blue-100 text-blue-600">
-              {console.log(
-                "Avatar fallback rendering. Initials:",
-                getInitials(user?.name || "")
-              )}
               {getInitials(user?.name || "")}
             </AvatarFallback>
           )}

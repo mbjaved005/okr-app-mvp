@@ -2,6 +2,8 @@ const express = require("express");
 const UserService = require("../services/user.js");
 const { requireUser } = require("./middleware/auth.js");
 const multer = require("multer");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const path = require("path");
 const jwt = require("jsonwebtoken");
 const {
@@ -12,17 +14,82 @@ const { logger } = require("../utils/log.js");
 
 const log = logger("api/routes/authRoutes");
 const router = express.Router();
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+const storage =
+  process.env.NODE_ENV === "production"
+    ? new CloudinaryStorage({
+        cloudinary: cloudinary,
+        params: {
+          folder: "profile-pictures",
+          allowed_formats: ["jpg", "png", "jpeg"],
+        },
+      })
+    : multer.diskStorage({
+        destination: function (req, file, cb) {
+          cb(null, "uploads/");
+        },
+        filename: function (req, file, cb) {
+          cb(null, Date.now() + path.extname(file.originalname));
+        },
+      });
+
 const upload = multer({ storage: storage });
+
+router.post(
+  "/update-profile-picture",
+  requireUser,
+  upload.single("profilePicture"),
+  async (req, res) => {
+    try {
+      log.info(
+        `Received profile picture update request for user: ${req.user.email}`
+      );
+
+      if (!req.file) {
+        log.warn("No file uploaded for profile picture update");
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const userId = req.user._id;
+      const profilePicture =
+        process.env.NODE_ENV === "production"
+          ? req.file.path // Cloudinary URL
+          : `${req.protocol}://${req.get("host")}/${req.file.path}`; // Local URL
+
+      log.info(`Updating profile picture for user ID: ${userId}`);
+      const updatedUser = await UserService.update(userId, { profilePicture });
+
+      if (!updatedUser) {
+        log.warn(`User not found for profile picture update: ${userId}`);
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      log.info(
+        `User profile picture updated successfully: ${updatedUser.email}`
+      );
+      console.log("Updated user data:", updatedUser.toJSON());
+
+      return res.json({
+        success: true,
+        message: "Profile picture updated successfully",
+        profilePicture: updatedUser.profilePicture,
+      });
+    } catch (error) {
+      log.error("Error updating user profile picture:", error);
+      console.error("Detailed error during profile picture update:", error);
+      return res.status(500).json({
+        error:
+          "An unexpected error occurred while updating the profile picture",
+      });
+    }
+  }
+);
 
 router.post("/login", async (req, res) => {
   const sendError = (msg) => res.status(400).json({ error: msg });
@@ -204,52 +271,6 @@ router.put("/update-profile", requireUser, async (req, res) => {
     });
   }
 });
-
-router.post(
-  "/update-profile-picture",
-  requireUser,
-  upload.single("profilePicture"),
-  async (req, res) => {
-    try {
-      log.info(
-        `Received profile picture update request for user: ${req.user.email}`
-      );
-
-      if (!req.file) {
-        log.warn("No file uploaded for profile picture update");
-        return res.status(400).json({ error: "No file uploaded" });
-      }
-
-      const userId = req.user._id;
-      const profilePicture = req.file.path;
-
-      log.info(`Updating profile picture for user ID: ${userId}`);
-      const updatedUser = await UserService.update(userId, { profilePicture });
-
-      if (!updatedUser) {
-        log.warn(`User not found for profile picture update: ${userId}`);
-        return res.status(404).json({ error: "User not found" });
-      }
-
-      log.info(
-        `User profile picture updated successfully: ${updatedUser.email}`
-      );
-      console.log("Updated user data:", updatedUser.toJSON());
-      return res.json({
-        success: true,
-        message: "Profile picture updated successfully",
-        profilePicture: updatedUser.profilePicture,
-      });
-    } catch (error) {
-      log.error("Error updating user profile picture:", error);
-      console.error("Detailed error during profile picture update:", error);
-      return res.status(500).json({
-        error:
-          "An unexpected error occurred while updating the profile picture",
-      });
-    }
-  }
-);
 
 router.put("/change-password", requireUser, async (req, res) => {
   const { email, currentPassword, newPassword } = req.body;

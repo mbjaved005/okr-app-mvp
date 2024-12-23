@@ -8,6 +8,8 @@ const authRoutes = require("../../routes/auth");
 const okrRoutes = require("../../routes/okr");
 const userManagementRoutes = require("../../routes/userManagement");
 const { authenticateWithToken } = require("../../routes/middleware/auth");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
@@ -33,18 +35,6 @@ app.use(express.static(path.join(__dirname, "client/build")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
-
-const upload = multer({ storage: storage });
 
 // Middleware for logging requests
 app.use((req, res, next) => {
@@ -125,12 +115,45 @@ app.use("/uploads", (req, res, next) => {
   next();
 });
 
-// File upload endpoint
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Configure storage
+const isProduction = process.env.NODE_ENV == "production";
+console.log("isProduction:", isProduction);
+const storage = isProduction
+  ? new CloudinaryStorage({
+      cloudinary: cloudinary,
+      params: {
+        folder: "profile-pictures",
+        allowed_formats: ["jpg", "png", "jpeg"],
+      },
+    })
+  : multer.diskStorage({
+      destination: function (req, file, cb) {
+        cb(null, "uploads/");
+      },
+      filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname));
+      },
+    });
+
+const upload = multer({ storage: storage });
+
+// Update the file upload endpoint
 app.post("/upload", upload.single("profilePicture"), (req, res) => {
   log.info("Received file upload request");
   if (req.file) {
-    log.info(`File uploaded successfully: ${req.file.path}`);
-    res.json({ success: true, filePath: req.file.path });
+    const fileUrl =
+      process.env.NODE_ENV === "production"
+        ? req.file.path // Cloudinary URL
+        : `${req.protocol}://${req.get("host")}/${req.file.path}`; // Local URL
+    log.info(`File uploaded successfully: ${fileUrl}`);
+    res.json({ success: true, fileUrl: fileUrl });
   } else {
     log.warn("No file uploaded");
     res.status(400).json({ success: false, message: "No file uploaded" });
