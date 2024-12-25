@@ -113,10 +113,10 @@ userSchema.statics.authenticateWithPassword =
     return updatedUser;
   };
 
-// Hash the password before saving the user model
 userSchema.pre("save", async function (next) {
-  if (this.isModified("password") || this.isNew) {
-    this.password = await bcrypt.hash(this.password, 10);
+  if (this.isModified("password")) {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
   }
   next();
 });

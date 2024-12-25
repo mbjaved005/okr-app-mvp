@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 
 /**
  * Hashes the password using bcrypt algorithm
@@ -41,4 +41,4 @@ module.exports = {
   generatePasswordHash,
   validatePassword,
   isPasswordHash,
-}
+};

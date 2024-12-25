@@ -1,4 +1,5 @@
 const express = require("express");
+const passport = require("passport");
 const UserService = require("../services/user.js");
 const { requireUser } = require("./middleware/auth.js");
 const multer = require("multer");
@@ -291,7 +292,7 @@ router.put("/change-password", requireUser, async (req, res) => {
     if (!isPasswordValid) {
       return res.status(400).json({ error: "Old password is incorrect" });
     }
-    user.password = await generatePasswordHash(newPassword);
+    user.password = newPassword;
     await user.save();
     return res.json({
       success: true,
@@ -302,5 +303,25 @@ router.put("/change-password", requireUser, async (req, res) => {
     return res.status(500).json({ error: "An unexpected error occurred" });
   }
 });
+
+// Google OAuth login route
+router.get(
+  "/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+  })
+);
+
+// Google OAuth callback route
+router.get(
+  "/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: "/login",
+  }),
+  (req, res) => {
+    // Successful authentication, redirect home.
+    res.redirect("/");
+  }
+);
 
 module.exports = router;

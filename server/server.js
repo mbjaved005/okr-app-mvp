@@ -9,10 +9,10 @@ const { authenticateWithToken } = require("./routes/middleware/auth");
 const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
-const logger = require("./utils/log");
+const { logger } = require("./utils/log");
 const userManagementRoutes = require("./routes/userManagement");
 const okrRoutes = require("./routes/okr"); // Import OKR routes
-
+require("./config/passport");
 const log = logger("server");
 
 if (!process.env.DATABASE_URL || !process.env.SESSION_SECRET) {
@@ -28,6 +28,10 @@ app.enable("strict routing");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
+
+// Google SSO Routes
+app.use(passport.initialize());
+app.use(passport.session());
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {

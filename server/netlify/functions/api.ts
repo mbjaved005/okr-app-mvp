@@ -14,6 +14,8 @@ const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
 const { logger } = require("../../utils/log");
+const passport = require("passport");
+require("../../config/passport"); // Ensure passport configuration is loaded
 
 console.log(authRoutes);
 
@@ -65,6 +67,9 @@ app.use(
     store: MongoStore.create({ mongoUrl: process.env.DATABASE_URL }),
   })
 );
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Handle server errors
 app.on("error", (error) => {

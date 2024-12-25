@@ -1,9 +1,9 @@
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { useNavigate } from "react-router-dom"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -11,48 +11,53 @@ import {
   CardHeader,
   CardTitle,
   CardFooter,
-} from "@/components/ui/card"
-import { useToast } from "@/hooks/useToast"
-import { LogIn, UserPlus } from "lucide-react"
-import { login } from "@/api/auth"
+} from "@/components/ui/card";
+import { useToast } from "@/hooks/useToast";
+import { LogIn, LogIn as Google } from "lucide-react";
+import { login } from "@/api/auth";
 
 type LoginForm = {
-  email: string
-  password: string
-}
+  email: string;
+  password: string;
+};
 
 export function Login() {
-  const [loading, setLoading] = useState(false)
-  const { toast } = useToast()
-  const navigate = useNavigate()
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>()
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginForm>();
 
   const onSubmit = async (data: LoginForm) => {
     try {
-      setLoading(true)
+      setLoading(true);
       console.log("Attempting to login user:", { email: data.email });
       let response = await login(data.email, data.password);
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      localStorage.setItem("token", response.token);
+      localStorage.setItem("user", JSON.stringify(response.user));
       console.log("Login successful, token stored:", response.token);
       toast({
         title: "Success",
         description: "Logged in successfully",
-      })
+      });
       console.log("Attempting to navigate to /");
-      navigate("/")
+      navigate("/");
       console.log("Navigation completed");
     } catch (error) {
       console.error("Login error:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.response?.data?.error || "An unexpected error occurred",
-      })
+        description:
+          error.response?.data?.error || "An unexpected error occurred",
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary p-4">
@@ -77,13 +82,15 @@ export function Login() {
                   required: "Email is required",
                   pattern: {
                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: "Invalid email address"
-                  }
+                    message: "Invalid email address",
+                  },
                 })}
                 aria-invalid={errors.email ? "true" : "false"}
               />
               {errors.email && (
-                <p className="text-sm text-destructive">{errors.email.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.email.message}
+                </p>
               )}
             </div>
             <div className="space-y-2">
@@ -100,13 +107,15 @@ export function Login() {
                   required: "Password is required",
                   minLength: {
                     value: 6,
-                    message: "Password must be at least 6 characters"
-                  }
+                    message: "Password must be at least 6 characters",
+                  },
                 })}
                 aria-invalid={errors.password ? "true" : "false"}
               />
               {errors.password && (
-                <p className="text-sm text-destructive">{errors.password.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.password.message}
+                </p>
               )}
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
@@ -120,6 +129,16 @@ export function Login() {
               )}
             </Button>
           </form>
+          <div className="flex items-center justify-center mt-4">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => (window.location.href = "/auth/google")}
+            >
+              <Google className="mr-2 h-4 w-4" />
+              Sign in with Google
+            </Button>
+          </div>
         </CardContent>
         <CardFooter className="flex justify-center">
           <Button
@@ -132,5 +151,5 @@ export function Login() {
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }
