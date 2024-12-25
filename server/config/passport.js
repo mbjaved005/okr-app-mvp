@@ -1,6 +1,9 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const User = require("../models/user"); // Adjust the path as needed
+const { logger } = require("../utils/log"); // Import the logger
+
+const log = logger("config/passport"); // Define the log variable
 
 passport.use(
   new GoogleStrategy(
