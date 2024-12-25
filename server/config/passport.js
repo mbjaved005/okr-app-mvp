@@ -11,8 +11,10 @@ passport.use(
     },
     async (token, tokenSecret, profile, done) => {
       try {
+        log.info(`Google OAuth profile received: ${profile.id}`);
         let user = await User.findOne({ googleId: profile.id });
         if (!user) {
+          log.info(`Creating new user for Google ID: ${profile.id}`);
           user = new User({
             googleId: profile.id,
             name: profile.displayName,
@@ -23,6 +25,7 @@ passport.use(
         }
         return done(null, user);
       } catch (err) {
+        log.error("Error during Google OAuth authentication:", err);
         return done(err, null);
       }
     }

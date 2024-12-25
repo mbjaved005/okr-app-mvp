@@ -320,9 +320,16 @@ router.get(
     failureFlash: true,
   }),
   (req, res) => {
-    // Successful authentication
-    console.log("Google authentication successful");
-    res.redirect("/");
+    try {
+      // Successful authentication
+      log.info(`Google authentication successful for user: ${req.user.email}`);
+      console.log("Google authentication successful");
+      res.redirect("/");
+    } catch (error) {
+      log.error("Error during Google OAuth callback:", error);
+      console.error("Detailed error during Google OAuth callback:", error);
+      res.status(500).json({ error: "An unexpected error occurred during Google OAuth callback" });
+    }
   }
 );
 
