@@ -133,7 +133,7 @@ export function Login() {
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => (window.location.href = "/auth/google")}
+              onClick={() => (window.location.href = "/api/auth/google")}
             >
               <Google className="mr-2 h-4 w-4" />
               Sign in with Google
