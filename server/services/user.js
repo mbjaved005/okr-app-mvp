@@ -208,6 +208,24 @@ class UserService {
       throw `Database error while setting user password: ${err}`;
     }
   }
+
+  static async findOrCreateGoogleUser(googleId, email, name, profilePicture) {
+    let user = await User.findOne({ googleId });
+    if (!user) {
+      user = new User({
+        googleId,
+        email,
+        name,
+        profilePicture,
+        password: randomUUID(), // Generate a random password for Google users
+        role: "Employee", // Default role, can be changed later
+        designation: "Not specified", // Default designation
+        department: "Not specified", // Default department
+      });
+      await user.save();
+    }
+    return user;
+  }
 }
 
 module.exports = UserService;

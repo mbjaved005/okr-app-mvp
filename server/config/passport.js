@@ -12,20 +12,14 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: "/api/auth/google/callback",
     },
-    async (token, tokenSecret, profile, done) => {
+    async (accessToken, refreshToken, profile, done) => {
       try {
-        log.info(`Google OAuth profile received: ${profile.id}`);
-        let user = await User.findOne({ googleId: profile.id });
-        if (!user) {
-          log.info(`Creating new user for Google ID: ${profile.id}`);
-          user = new User({
-            googleId: profile.id,
-            name: profile.displayName,
-            email: profile.emails[0].value,
-            profilePicture: profile.photos[0].value,
-          });
-          await user.save();
-        }
+        const user = await UserService.findOrCreateGoogleUser(
+          profile.id,
+          profile.emails[0].value,
+          profile.displayName,
+          profile.photos[0].value
+        );
         return done(null, user);
       } catch (err) {
         log.error("Error during Google OAuth authentication:", err);

@@ -25,8 +25,15 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      required: function () {
+        return !this.googleId;
+      },
       minlength: 6,
+    },
+    googleId: {
+      type: String,
+      sparse: true,
+      unique: true,
     },
     role: {
       type: String,
@@ -87,6 +94,7 @@ userSchema.set("toJSON", {
     delete ret._id;
     delete ret.password;
     delete ret.__v;
+    delete ret.googleId;
     return ret;
   },
 });

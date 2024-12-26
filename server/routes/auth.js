@@ -321,14 +321,18 @@ router.get(
   }),
   (req, res) => {
     try {
-      // Successful authentication
       log.info(`Google authentication successful for user: ${req.user.email}`);
-      console.log("Google authentication successful");
-      res.redirect("/");
+      const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, {
+        expiresIn: "1d",
+      });
+      res.redirect(`/auth-success?token=${token}`);
     } catch (error) {
       log.error("Error during Google OAuth callback:", error);
-      console.error("Detailed error during Google OAuth callback:", error);
-      res.status(500).json({ error: "An unexpected error occurred during Google OAuth callback" });
+      res
+        .status(500)
+        .json({
+          error: "An unexpected error occurred during Google OAuth callback",
+        });
     }
   }
 );
