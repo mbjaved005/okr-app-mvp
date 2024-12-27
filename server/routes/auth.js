@@ -136,6 +136,13 @@ router.post("/register", upload.single("profilePicture"), async (req, res) => {
       return res.status(400).json({ error: "All fields are required" });
     }
 
+    if (!email.endsWith("@emumba.com")) {
+      log.warn(`Invalid email domain attempted: ${email}`);
+      return res
+        .status(400)
+        .json({ error: "Only @emumba.com emails are allowed" });
+    }
+
     if (!["Admin", "Manager", "Employee"].includes(role)) {
       log.warn(`Invalid role attempted: ${role}`);
       return res.status(400).json({ error: "Invalid role selected" });
@@ -307,14 +314,43 @@ router.put("/change-password", requireUser, async (req, res) => {
 // Google OAuth login route
 router.get(
   "/google",
-  passport.authenticate("google", {
-    scope: ["profile", "email"],
-  })
+  (req, res, next) => {
+    log.info(
+      `Google OAuth client ID: ${process.env.GOOGLE_CLIENT_ID.substring(
+        0,
+        5
+      )}...`
+    );
+    log.info(
+      `Google OAuth client secret: ${process.env.GOOGLE_CLIENT_SECRET.substring(
+        0,
+        5
+      )}...`
+    );
+    next();
+  },
+  passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
 // Google OAuth callback route
 router.get(
   "/google/callback",
+  (req, res, next) => {
+    log.info("Google OAuth callback initiated");
+    log.info(
+      `Google OAuth client ID: ${process.env.GOOGLE_CLIENT_ID.substring(
+        0,
+        5
+      )}...`
+    );
+    log.info(
+      `Google OAuth client secret: ${process.env.GOOGLE_CLIENT_SECRET.substring(
+        0,
+        5
+      )}...`
+    );
+    next();
+  },
   passport.authenticate("google", {
     failureRedirect: "/login",
     failureFlash: true,
@@ -322,17 +358,15 @@ router.get(
   (req, res) => {
     try {
       log.info(`Google authentication successful for user: ${req.user.email}`);
-      const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, {
-        expiresIn: "1d",
-      });
-      res.redirect(`/auth-success?token=${token}`);
+      console.log("Google authentication successful");
+      res.redirect("/");
     } catch (error) {
       log.error("Error during Google OAuth callback:", error);
-      res
-        .status(500)
-        .json({
-          error: "An unexpected error occurred during Google OAuth callback",
-        });
+      log.info("Error during Google OAuth callback:", error);
+      console.error("Detailed error during Google OAuth callback:", error);
+      res.status(500).json({
+        error: "An unexpected error occurred during Google OAuth callback",
+      });
     }
   }
 );

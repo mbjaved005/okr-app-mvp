@@ -52,6 +52,12 @@ export function Register() {
     try {
       setLoading(true);
       setEmailError("");
+
+      if (!data.email.endsWith("@emumba.com")) {
+        setEmailError("Only @emumba.com emails are allowed");
+        throw new Error("Only @emumba.com emails are allowed");
+      }
+
       const formData = {
         ...data,
         profilePicture: data.profilePicture?.[0],

@@ -122,9 +122,13 @@ userSchema.statics.authenticateWithPassword =
   };
 
 userSchema.pre("save", async function (next) {
-  if (this.isModified("password")) {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
+  if (this.isModified("password") || this.isNew) {
+    try {
+      const salt = await bcrypt.genSalt(10);
+      this.password = await bcrypt.hash(this.password, salt);
+    } catch (err) {
+      return next(err);
+    }
   }
   next();
 });

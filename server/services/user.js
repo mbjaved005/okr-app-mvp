@@ -170,12 +170,10 @@ class UserService {
     const existingUser = await UserService.getByEmail(email);
     if (existingUser) throw "User with this email already exists";
 
-    const hash = await generatePasswordHash(password);
-
     try {
       const user = new User({
         email,
-        password: hash,
+        password,
         name,
         role,
         designation,
@@ -185,7 +183,6 @@ class UserService {
       });
 
       await user.save();
-      log.info(`New user created: ${user.email}`);
       return user;
     } catch (err) {
       log.error(`Database error while creating new user: ${err}`);
@@ -201,7 +198,6 @@ class UserService {
       if (!user.isNew) {
         await user.save();
       }
-
       return user;
     } catch (err) {
       log.error(`Database error while setting user password: ${err}`);
