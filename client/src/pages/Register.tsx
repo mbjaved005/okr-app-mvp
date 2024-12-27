@@ -1,16 +1,16 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { useNavigate } from "react-router-dom"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/select"
 import {
   Card,
   CardContent,
@@ -18,80 +18,78 @@ import {
   CardHeader,
   CardTitle,
   CardFooter,
-} from "@/components/ui/card";
-import { useToast } from "@/hooks/useToast";
-import { UserPlus, X } from "lucide-react";
-import { register as registerUser } from "@/api/auth";
-import departments from "@/data/departments.json";
+} from "@/components/ui/card"
+import { useToast } from "@/hooks/useToast"
+import { UserPlus, X } from "lucide-react"
+import { register as registerUser } from "@/api/auth"
+import departments from '@/data/departments.json';
+import { Spinner } from "@/components/ui/spinner" // Import Spinner component
 
 type RegisterForm = {
-  name: string;
-  email: string;
-  password: string;
-  role: string;
-  designation: string;
-  department: string;
-  profilePicture?: FileList;
-};
+  name: string
+  email: string
+  password: string
+  role: string
+  designation: string
+  department: string
+  profilePicture?: FileList
+}
 
 export function Register() {
-  const [loading, setLoading] = useState(false);
-  const [emailError, setEmailError] = useState("");
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm<RegisterForm>();
-  const profilePicture = watch("profilePicture");
+  const [loading, setLoading] = useState(false)
+  const [emailError, setEmailError] = useState("")
+  const { toast } = useToast()
+  const navigate = useNavigate()
+  const { register, handleSubmit, setValue, watch,formState: { errors } } = useForm<RegisterForm>()
+  const profilePicture = watch("profilePicture")
 
   const onSubmit = async (data: RegisterForm) => {
     try {
-      setLoading(true);
-      setEmailError("");
+      setLoading(true)
+      setEmailError("")
       const formData = {
         ...data,
-        profilePicture: data.profilePicture?.[0],
-      };
-      const response = await registerUser(formData);
-
+        profilePicture: data.profilePicture?.[0]
+      }
+      const response = await registerUser(formData)
+     
       if (response.success) {
         toast({
           title: "Success",
           description: "Account created successfully",
-        });
-        navigate("/login");
+        })
+        navigate("/login")
       } else {
-        throw new Error(response.message || "Registration failed");
+        throw new Error(response.message || "Registration failed")
       }
     } catch (error) {
-      if (error.response && error.response.status === 405) {
-        setEmailError("Email is already registered");
-        error.message = "Email is already registered";
+      if (error instanceof Error && (error as any).response && (error as any).response.status === 405) {
+        setEmailError("Email is already registered")
+        error.message = "Email is already registered"
       }
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Registration failed. Please try again.",
-      });
+        description: (error as Error).message || "Registration failed. Please try again.",
+      })
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const clearProfilePicture = () => {
-    setValue("profilePicture", undefined);
-    const fileInput = document.getElementById(
-      "profilePicture"
-    ) as HTMLInputElement;
-    if (fileInput) fileInput.value = "";
-  };
+    setValue("profilePicture", undefined)
+    const fileInput = document.getElementById("profilePicture") as HTMLInputElement
+    if (fileInput) fileInput.value = ""
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary p-4">
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <Spinner/>
+        </div>
+      )}
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Create an account</CardTitle>
@@ -137,25 +135,20 @@ export function Register() {
                   required: "Password is required",
                   minLength: {
                     value: 6,
-                    message: "Password must be at least 6 characters",
-                  },
+                    message: "Password must be at least 6 characters"
+                  }
                 })}
                 aria-invalid={errors.password ? "true" : "false"}
               />
               {errors.password && (
-                <p className="text-sm text-destructive">
-                  {errors.password.message}
-                </p>
+                <p className="text-sm text-destructive">{errors.password.message}</p>
               )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="role">
                 Role <span className="text-destructive">*</span>
               </Label>
-              <Select
-                onValueChange={(value) => setValue("role", value)}
-                required
-              >
+              <Select onValueChange={(value) => setValue("role", value)} required>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select your role" />
                 </SelectTrigger>
@@ -181,15 +174,12 @@ export function Register() {
               <Label htmlFor="department">
                 Department <span className="text-destructive">*</span>
               </Label>
-              <Select
-                onValueChange={(value) => setValue("department", value)}
-                required
-              >
+              <Select onValueChange={(value) => setValue("department", value)} required>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select your department" />
                 </SelectTrigger>
                 <SelectContent>
-                  {departments.departments.map((department) => (
+                  {departments.departments.map(department => (
                     <SelectItem key={department} value={department}>
                       {department}
                     </SelectItem>
@@ -242,5 +232,5 @@ export function Register() {
         </CardFooter>
       </Card>
     </div>
-  );
+  )
 }

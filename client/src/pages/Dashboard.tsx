@@ -35,6 +35,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import departments from '@/data/departments.json';
+import { Spinner } from "@/components/ui/spinner" // Import Spinner component
 
 export function Dashboard() {
   console.log("Dashboard component rendered");
@@ -52,6 +53,7 @@ export function Dashboard() {
     endDate: ""
   })
   const [progressData, setProgressData] = useState([])
+  const [loading, setLoading] = useState(true) // Add loading state
 
   useEffect(() => {
     const fetchData = async () => {
@@ -68,6 +70,8 @@ export function Dashboard() {
         setFilteredUsers(usersResponse.users)
       } catch (error) {
         console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false) // Set loading to false after fetching data
       }
     }
     fetchData()
@@ -190,189 +194,197 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-          <SheetTrigger asChild>
-            <Button variant="outline" className="relative">
-              <Filter className="mr-2 h-4 w-4" />
-              Filters
-              {getActiveFiltersCount() > 0 && (
-                <Badge
-                  variant="secondary"
-                  className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-blue-100 text-blue-700"
-                >
-                  {getActiveFiltersCount()}
-                </Badge>
-              )}
-            </Button>
-          </SheetTrigger>
-          <SheetContent>
-            <SheetHeader>
-              <SheetTitle>Filter OKRs</SheetTitle>
-              <SheetDescription>
-                Refine your OKR view using the filters below
-              </SheetDescription>
-            </SheetHeader>
-            <Separator className="my-4" />
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Category</Label>
-                <Select
-                  value={filters.category}
-                  onValueChange={(value) => setFilters(prev => ({ ...prev, category: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
-                    <SelectItem value="Individual">Individual</SelectItem>
-                    <SelectItem value="Team">Team</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Department</Label>
-                <Select
-                  value={filters.department}
-                  onValueChange={(value) => setFilters(prev => ({ ...prev, department: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select department" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Departments</SelectItem>
-                    {departments.departments.map(department => (
-                      <SelectItem key={department} value={department}>
-                        {department}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Quarter</Label>
-                <Select
-                  value={filters.quarter}
-                  onValueChange={(value) => setFilters(prev => ({ ...prev, quarter: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select quarter" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Quarters</SelectItem>
-                    <SelectItem value="Q1">Q1</SelectItem>
-                    <SelectItem value="Q2">Q2</SelectItem>
-                    <SelectItem value="Q3">Q3</SelectItem>
-                    <SelectItem value="Q4">Q4</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Date Range</Label>
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="w-5/7">
-                    <Label className="text-xs text-muted-foreground">Start Date</Label>
-                    <Input
-                      type="date"
-                      value={filters.startDate}
-                      onChange={(e) => setFilters(prev => ({ ...prev, startDate: e.target.value }))}
-                    />
+      {loading ? (
+        <div className="flex justify-center items-center h-full">
+          <Spinner /> {/* Show spinner while loading */}
+        </div>
+      ) : (
+        <>
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+              <SheetTrigger asChild>
+                <Button variant="outline" className="relative">
+                  <Filter className="mr-2 h-4 w-4" />
+                  Filters
+                  {getActiveFiltersCount() > 0 && (
+                    <Badge
+                      variant="secondary"
+                      className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-blue-100 text-blue-700"
+                    >
+                      {getActiveFiltersCount()}
+                    </Badge>
+                  )}
+                </Button>
+              </SheetTrigger>
+              <SheetContent>
+                <SheetHeader>
+                  <SheetTitle>Filter OKRs</SheetTitle>
+                  <SheetDescription>
+                    Refine your OKR view using the filters below
+                  </SheetDescription>
+                </SheetHeader>
+                <Separator className="my-4" />
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Category</Label>
+                    <Select
+                      value={filters.category}
+                      onValueChange={(value) => setFilters(prev => ({ ...prev, category: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Categories</SelectItem>
+                        <SelectItem value="Individual">Individual</SelectItem>
+                        <SelectItem value="Team">Team</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <div className="w-5/7">
-                    <Label className="text-xs text-muted-foreground">End Date</Label>
-                    <Input
-                      type="date"
-                      value={filters.endDate}
-                      onChange={(e) => setFilters(prev => ({ ...prev, endDate: e.target.value }))}
-                    />
+
+                  <div className="space-y-2">
+                    <Label>Department</Label>
+                    <Select
+                      value={filters.department}
+                      onValueChange={(value) => setFilters(prev => ({ ...prev, department: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select department" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Departments</SelectItem>
+                        {departments.departments.map(department => (
+                          <SelectItem key={department} value={department}>
+                            {department}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Quarter</Label>
+                    <Select
+                      value={filters.quarter}
+                      onValueChange={(value) => setFilters(prev => ({ ...prev, quarter: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select quarter" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Quarters</SelectItem>
+                        <SelectItem value="Q1">Q1</SelectItem>
+                        <SelectItem value="Q2">Q2</SelectItem>
+                        <SelectItem value="Q3">Q3</SelectItem>
+                        <SelectItem value="Q4">Q4</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Date Range</Label>
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="w-5/7">
+                        <Label className="text-xs text-muted-foreground">Start Date</Label>
+                        <Input
+                          type="date"
+                          value={filters.startDate}
+                          onChange={(e) => setFilters(prev => ({ ...prev, startDate: e.target.value }))}
+                        />
+                      </div>
+                      <div className="w-5/7">
+                        <Label className="text-xs text-muted-foreground">End Date</Label>
+                        <Input
+                          type="date"
+                          value={filters.endDate}
+                          onChange={(e) => setFilters(prev => ({ ...prev, endDate: e.target.value }))}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-            <SheetFooter className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t">
-              <Button
-                onClick={resetFilters}
-                className={`w-full bg-blue-500 text-white hover:bg-blue-600 ${
-                  isResetting ? 'animate-pulse' : ''
-                }`}
-                disabled={isResetting || getActiveFiltersCount() === 0}
-              >
-                <div className="relative flex items-center justify-center gap-2">
-                  <RotateCcw className={`h-4 w-4 transition-transform duration-500 ${
-                    isResetting ? 'animate-spin' : ''
-                  }`} />
-                  Reset Filters
-                </div>
-              </Button>
-            </SheetFooter>
-          </SheetContent>
-        </Sheet>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total OKRs</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{filteredOkrs.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Team Members</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{filteredUsers.length}</div>
-            {filters.department !== "all" && (
-              <p className="text-sm text-muted-foreground mt-1">
-                in {filters.department} department
-              </p>
-            )}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Average Progress</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{calculateAverageProgress()}%</div>
-            <Progress value={calculateAverageProgress()} className="mt-2" />
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Progress Overview</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={progressData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="progress"
-                  stroke="#2563eb"
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+                <SheetFooter className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t">
+                  <Button
+                    onClick={resetFilters}
+                    className={`w-full bg-blue-500 text-white hover:bg-blue-600 ${
+                      isResetting ? 'animate-pulse' : ''
+                    }`}
+                    disabled={isResetting || getActiveFiltersCount() === 0}
+                  >
+                    <div className="relative flex items-center justify-center gap-2">
+                      <RotateCcw className={`h-4 w-4 transition-transform duration-500 ${
+                        isResetting ? 'animate-spin' : ''
+                      }`} />
+                      Reset Filters
+                    </div>
+                  </Button>
+                </SheetFooter>
+              </SheetContent>
+            </Sheet>
           </div>
-        </CardContent>
-      </Card>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Total OKRs</CardTitle>
+                <Target className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{filteredOkrs.length}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Team Members</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{filteredUsers.length}</div>
+                {filters.department !== "all" && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    in {filters.department} department
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Average Progress</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{calculateAverageProgress()}%</div>
+                <Progress value={calculateAverageProgress()} className="mt-2" />
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Progress Overview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={progressData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line
+                      type="monotone"
+                      dataKey="progress"
+                      stroke="#2563eb"
+                      strokeWidth={2}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   )
 }
