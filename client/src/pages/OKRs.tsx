@@ -58,6 +58,7 @@ import departments from "@/data/departments.json";
 import { useNavigate } from "react-router-dom";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
+import { Spinner } from "@/components/ui/spinner"; // Import Spinner component
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -83,7 +84,7 @@ const getUserInitials = (fullName: string) => {
 };
 
 const getQuarterLabels = (startDate: Date, endDate: Date) => {
-  const quarters = [];
+  const quarters: string[] = [];
   let current = new Date(startDate);
   while (current <= endDate) {
     const quarter = getQuarter(current);
@@ -110,7 +111,8 @@ export function OKRs() {
   const navigate = useNavigate();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [selectedOKR, setSelectedOKR] = useState(null);
+  const [selectedOKR, setSelectedOKR] = useState<OKR | null>(null);
+  const [loading, setLoading] = useState(true); // Add loading state
   interface OKR {
     _id: string;
     title: string;
@@ -142,7 +144,7 @@ export function OKRs() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [okrToDelete, setOkrToDelete] = useState(null);
+  const [okrToDelete, setOkrToDelete] = useState<OKR | null>(null);
   const { toast } = useToast();
 
   const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -160,6 +162,8 @@ export function OKRs() {
           title: "Error",
           description: "Failed to fetch OKRs",
         });
+      } finally {
+        setLoading(false); // Set loading to false after fetching OKRs
       }
     };
     fetchOKRs();
@@ -182,20 +186,24 @@ export function OKRs() {
     fetchUsers();
   }, [toast]);
 
-  const handleEditClick = (okr) => {
+  const handleEditClick = (okr: OKR) => {
     setSelectedOKR(okr);
     setIsEditDialogOpen(true);
   };
 
-  const handleDeleteClick = (okr) => {
+  const handleDeleteClick = (okr: OKR) => {
     setOkrToDelete(okr);
     setIsDeleteDialogOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
     try {
-      await deleteOKR(okrToDelete._id);
-      const updatedOkrs = okrs.filter((okr) => okr._id !== okrToDelete._id);
+      if (okrToDelete) {
+        await deleteOKR(okrToDelete._id);
+      }
+      const updatedOkrs = okrToDelete
+        ? okrs.filter((okr) => okr._id !== okrToDelete._id)
+        : okrs;
       setOkrs(updatedOkrs);
       toast({
         title: "Success",
@@ -313,418 +321,437 @@ export function OKRs() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">OKRs</h1>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create OKR
-        </Button>
-      </div>
-
-      <div className="flex gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search OKRs..."
-            className="pl-8 w-full"
-            value={filter.search}
-            onChange={(e) => setFilter({ ...filter, search: e.target.value })}
-          />
+      {loading ? (
+        <div className="flex justify-center items-center h-full">
+          <Spinner /> {/* Show spinner while loading */}
         </div>
-        <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-          <SheetTrigger asChild>
-            <Button variant="outline" className="relative">
-              <Filter className="mr-2 h-4 w-4" />
-              Filters
-              {getActiveFiltersCount() > 0 && (
-                <Badge
-                  variant="secondary"
-                  className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-blue-100 text-blue-700"
-                >
-                  {getActiveFiltersCount()}
-                </Badge>
-              )}
+      ) : (
+        <>
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold">OKRs</h1>
+            <Button onClick={() => setIsCreateDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Create OKR
             </Button>
-          </SheetTrigger>
-          <SheetContent className="w-full sm:max-w-[440px]">
-            <SheetHeader className="space-y-2.5">
-              <SheetTitle>Filter OKRs</SheetTitle>
-              <SheetDescription>
-                Refine your OKR list using the filters below
-              </SheetDescription>
-            </SheetHeader>
-            <Separator className="my-4" />
-            <ScrollArea className="h-[calc(100vh-12rem)] pr-4">
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Department</Label>
-                  <Select
-                    value={filter.department}
-                    onValueChange={(value) =>
-                      setFilter({ ...filter, department: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select department" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Departments</SelectItem>
-                      {departments.departments.map((department) => (
-                        <SelectItem key={department} value={department}>
-                          {department}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+          </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Category</Label>
-                  <Select
-                    value={filter.category}
-                    onValueChange={(value) =>
-                      setFilter({ ...filter, category: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      <SelectItem value="Individual">Individual</SelectItem>
-                      <SelectItem value="Team">Team</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Created By</Label>
-                  <Select
-                    value={filter.createdBy}
-                    onValueChange={(value) =>
-                      setFilter({ ...filter, createdBy: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select creator" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Creators</SelectItem>
-                      {users.map((user) => (
-                        <SelectItem key={user.id} value={user.name}>
-                          {user.name} ({user.email})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Owners</Label>
-                  <Select
-                    value={filter.owners}
-                    onValueChange={(value) =>
-                      setFilter({ ...filter, owners: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select owner" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Owners</SelectItem>
-                      {users.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.name} ({user.email})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Quarter</Label>
-                  <Select
-                    value={filter.quarter}
-                    onValueChange={(value) =>
-                      setFilter({ ...filter, quarter: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select quarter" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Quarters</SelectItem>
-                      <SelectItem value="Q1">Q1</SelectItem>
-                      <SelectItem value="Q2">Q2</SelectItem>
-                      <SelectItem value="Q3">Q3</SelectItem>
-                      <SelectItem value="Q4">Q4</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Status</Label>
-                  <Select
-                    value={filter.status}
-                    onValueChange={(value) =>
-                      setFilter({ ...filter, status: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Statuses</SelectItem>
-                      <SelectItem value="Not Started">Not Started</SelectItem>
-                      <SelectItem value="In Progress">In Progress</SelectItem>
-                      <SelectItem value="Completed">Completed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Date Range</Label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-xs text-muted-foreground">
-                        Start Date
-                      </Label>
-                      <Input
-                        type="date"
-                        value={filter.startDate}
-                        onChange={(e) =>
-                          setFilter({ ...filter, startDate: e.target.value })
-                        }
-                        className="h-11 w-50 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">
-                        End Date
-                      </Label>
-                      <Input
-                        type="date"
-                        value={filter.endDate}
-                        onChange={(e) =>
-                          setFilter({ ...filter, endDate: e.target.value })
-                        }
-                        className="h-11 w-50 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </ScrollArea>
-            <SheetFooter className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t">
-              <Button
-                onClick={resetFilters}
-                className={`w-full bg-blue-500 text-white hover:bg-blue-600 ${
-                  isResetting ? "animate-pulse" : ""
-                }`}
-                disabled={isResetting || getActiveFiltersCount() === 0}
-              >
-                <div className="relative flex items-center justify-center gap-2">
-                  <RotateCcw
-                    className={`h-4 w-4 transition-transform duration-500 ${
-                      isResetting ? "animate-spin" : ""
-                    }`}
-                  />
-                  Reset Filters
-                </div>
-              </Button>
-            </SheetFooter>
-          </SheetContent>
-        </Sheet>
-      </div>
-
-      <div className="space-y-2">
-        {filteredOKRs.length > 0 ? (
-          filteredOKRs.map((okr) => (
-            <Card
-              key={okr.id}
-              className="hover:shadow-lg transition-shadow bg-transparent border-none p-1"
-            >
-              <CardHeader className="bg-transparent p-1">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12">
-                      <CircularProgressbar
-                        value={okr.progress}
-                        text={`${okr.progress}%`}
-                        styles={buildStyles({
-                          textSize: "30px",
-                        })}
-                      />
-                    </div>
-                    <div className="flex flex-col justify-between h-12">
-                      <CardTitle className="text-lg text-foreground">
-                        {okr.title}
-                      </CardTitle>
-                      <p className="font-lg text-foreground">
-                        {okr.department} | {okr.category}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => navigate(`/okrs/${okr._id}`)}
-                      className="hover:bg-blue-50 dark:hover:bg-blue-900"
-                    >
-                      <Eye className="h-4 w-4 text-blue-500" />
-                    </Button>
-                    {(okr.owners.includes(loggedInUserId) ||
-                      okr.createdBy === loggedInUserId) && (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEditClick(okr)}
-                          className="hover:bg-blue-50 dark:hover:bg-blue-900"
-                        >
-                          <Edit className="h-4 w-4 text-blue-500" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteClick(okr)}
-                          className="hover:bg-red-50 dark:hover:bg-red-900"
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
-                      </>
-                    )}
-                    {getQuarterLabels(
-                      new Date(okr.startDate),
-                      new Date(okr.endDate)
-                    ).map((quarter) => (
-                      <Badge key={quarter} variant="secondary">
-                        {quarter}
-                      </Badge>
-                    ))}
+          <div className="flex gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search OKRs..."
+                className="pl-8 w-full"
+                value={filter.search}
+                onChange={(e) =>
+                  setFilter({ ...filter, search: e.target.value })
+                }
+              />
+            </div>
+            <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+              <SheetTrigger asChild>
+                <Button variant="outline" className="relative">
+                  <Filter className="mr-2 h-4 w-4" />
+                  Filters
+                  {getActiveFiltersCount() > 0 && (
                     <Badge
-                      className={`${getStatusColor(
-                        getStatusFromProgress(okr.progress)
-                      )} text-white`}
+                      variant="secondary"
+                      className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-blue-100 text-blue-700"
                     >
-                      {getStatusFromProgress(okr.progress)}
+                      {getActiveFiltersCount()}
                     </Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="bg-transparent p-1">
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">
-                    {okr.description}
-                  </p>
-                  <div className="grid grid-cols-4 gap-3 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Start Date</p>
-                      <p className="font-medium">
-                        {format(new Date(okr.startDate), "MMM dd, yyyy")}
-                      </p>
+                  )}
+                </Button>
+              </SheetTrigger>
+              <SheetContent className="w-full sm:max-w-[440px]">
+                <SheetHeader className="space-y-2.5">
+                  <SheetTitle>Filter OKRs</SheetTitle>
+                  <SheetDescription>
+                    Refine your OKR list using the filters below
+                  </SheetDescription>
+                </SheetHeader>
+                <Separator className="my-4" />
+                <ScrollArea className="h-[calc(100vh-12rem)] pr-4">
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Department</Label>
+                      <Select
+                        value={filter.department}
+                        onValueChange={(value) =>
+                          setFilter({ ...filter, department: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Departments</SelectItem>
+                          {departments.departments.map((department) => (
+                            <SelectItem key={department} value={department}>
+                              {department}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <div>
-                      <p className="text-muted-foreground">End Date</p>
-                      <p className="font-medium">
-                        {format(new Date(okr.endDate), "MMM dd, yyyy")}
-                      </p>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Category</Label>
+                      <Select
+                        value={filter.category}
+                        onValueChange={(value) =>
+                          setFilter({ ...filter, category: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Categories</SelectItem>
+                          <SelectItem value="Individual">Individual</SelectItem>
+                          <SelectItem value="Team">Team</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <div>
-                      <p className="text-muted-foreground">Created By</p>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-background text-sm font-medium text-blue-600">
-                              {getUserInitialsById(okr.createdBy)}
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{getOwnerName(okr.createdBy)}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Created By</Label>
+                      <Select
+                        value={filter.createdBy}
+                        onValueChange={(value) =>
+                          setFilter({ ...filter, createdBy: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select creator" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Creators</SelectItem>
+                          {users.map((user) => (
+                            <SelectItem key={user.id} value={user.name}>
+                              {user.name} ({user.email})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <div>
-                      <p className="text-muted-foreground">Owners</p>
-                      <div className="flex -space-x-2">
-                        {okr.owners.map((owner, index) => {
-                          const ownerInitials = getOwnerInitials(owner);
-                          const ownerName = getOwnerName(owner);
-                          return ownerInitials && ownerName ? (
-                            <TooltipProvider key={index}>
-                              <Tooltip>
-                                <TooltipTrigger>
-                                  <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-background text-sm font-medium text-blue-600 ring-2 ring-background">
-                                    {ownerInitials}
-                                  </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>{ownerName}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          ) : null;
-                        })}
+
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Owners</Label>
+                      <Select
+                        value={filter.owners}
+                        onValueChange={(value) =>
+                          setFilter({ ...filter, owners: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select owner" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Owners</SelectItem>
+                          {users.map((user) => (
+                            <SelectItem key={user.id} value={user.id}>
+                              {user.name} ({user.email})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Quarter</Label>
+                      <Select
+                        value={filter.quarter}
+                        onValueChange={(value) =>
+                          setFilter({ ...filter, quarter: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select quarter" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Quarters</SelectItem>
+                          <SelectItem value="Q1">Q1</SelectItem>
+                          <SelectItem value="Q2">Q2</SelectItem>
+                          <SelectItem value="Q3">Q3</SelectItem>
+                          <SelectItem value="Q4">Q4</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Status</Label>
+                      <Select
+                        value={filter.status}
+                        onValueChange={(value) =>
+                          setFilter({ ...filter, status: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Statuses</SelectItem>
+                          <SelectItem value="Not Started">
+                            Not Started
+                          </SelectItem>
+                          <SelectItem value="In Progress">
+                            In Progress
+                          </SelectItem>
+                          <SelectItem value="Completed">Completed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Date Range</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">
+                            Start Date
+                          </Label>
+                          <Input
+                            type="date"
+                            value={filter.startDate}
+                            onChange={(e) =>
+                              setFilter({
+                                ...filter,
+                                startDate: e.target.value,
+                              })
+                            }
+                            className="h-11 w-50 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">
+                            End Date
+                          </Label>
+                          <Input
+                            type="date"
+                            value={filter.endDate}
+                            onChange={(e) =>
+                              setFilter({ ...filter, endDate: e.target.value })
+                            }
+                            className="h-11 w-50 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          <div className="text-center text-muted-foreground mt-10">
-            <h2 className="text-2xl font-semibold">No OKRs at the moment</h2>
-            <p className="mt-2 text-sm">
-              It looks like there are no OKRs to display. Create a new OKR to
-              get started!
-            </p>
+                </ScrollArea>
+                <SheetFooter className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t">
+                  <Button
+                    onClick={resetFilters}
+                    className={`w-full bg-blue-500 text-white hover:bg-blue-600 ${
+                      isResetting ? "animate-pulse" : ""
+                    }`}
+                    disabled={isResetting || getActiveFiltersCount() === 0}
+                  >
+                    <div className="relative flex items-center justify-center gap-2">
+                      <RotateCcw
+                        className={`h-4 w-4 transition-transform duration-500 ${
+                          isResetting ? "animate-spin" : ""
+                        }`}
+                      />
+                      Reset Filters
+                    </div>
+                  </Button>
+                </SheetFooter>
+              </SheetContent>
+            </Sheet>
           </div>
-        )}
-      </div>
 
-      <CreateOKRDialog
-        open={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
-        onOKRUpdated={handleOKRUpdated}
-      />
+          <div className="space-y-2">
+            {filteredOKRs.length > 0 ? (
+              filteredOKRs.map((okr) => (
+                <Card
+                  key={okr._id}
+                  className="hover:shadow-lg transition-shadow bg-transparent border-none p-1"
+                >
+                  <CardHeader className="bg-transparent p-1">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12">
+                          <CircularProgressbar
+                            value={okr.progress}
+                            text={`${okr.progress}%`}
+                            styles={buildStyles({
+                              textSize: "30px",
+                            })}
+                          />
+                        </div>
+                        <div className="flex flex-col justify-between h-12">
+                          <CardTitle className="text-lg text-foreground">
+                            {okr.title}
+                          </CardTitle>
+                          <p className="font-lg text-foreground">
+                            {okr.department} | {okr.category}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => navigate(`/okrs/${okr._id}`)}
+                          className="hover:bg-blue-50 dark:hover:bg-blue-900"
+                        >
+                          <Eye className="h-4 w-4 text-blue-500" />
+                        </Button>
+                        {(okr.owners.includes(loggedInUserId) ||
+                          okr.createdBy === loggedInUserId) && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEditClick(okr)}
+                              className="hover:bg-blue-50 dark:hover:bg-blue-900"
+                            >
+                              <Edit className="h-4 w-4 text-blue-500" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteClick(okr)}
+                              className="hover:bg-red-50 dark:hover:bg-red-900"
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </>
+                        )}
+                        {getQuarterLabels(
+                          new Date(okr.startDate),
+                          new Date(okr.endDate)
+                        ).map((quarter) => (
+                          <Badge key={quarter} variant="secondary">
+                            {quarter}
+                          </Badge>
+                        ))}
+                        <Badge
+                          className={`${getStatusColor(
+                            getStatusFromProgress(okr.progress)
+                          )} text-white`}
+                        >
+                          {getStatusFromProgress(okr.progress)}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="bg-transparent p-1">
+                    <div className="space-y-1">
+                      {/* <p className="text-sm text-muted-foreground">
+                        {okr.description}
+                      </p> */}
+                      <div className="grid grid-cols-4 gap-3 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Start Date</p>
+                          <p className="font-medium">
+                            {format(new Date(okr.startDate), "MMM dd, yyyy")}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">End Date</p>
+                          <p className="font-medium">
+                            {format(new Date(okr.endDate), "MMM dd, yyyy")}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Created By</p>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger>
+                                <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-background text-sm font-medium text-blue-600">
+                                  {getUserInitialsById(okr.createdBy)}
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{getOwnerName(okr.createdBy)}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Owners</p>
+                          <div className="flex -space-x-2">
+                            {okr.owners.map((owner, index) => {
+                              const ownerInitials = getOwnerInitials(owner);
+                              const ownerName = getOwnerName(owner);
+                              return ownerInitials && ownerName ? (
+                                <TooltipProvider key={index}>
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-background text-sm font-medium text-blue-600 ring-2 ring-background">
+                                        {ownerInitials}
+                                      </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>{ownerName}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              ) : null;
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="text-center text-muted-foreground mt-10">
+                <h2 className="text-2xl font-semibold">
+                  No OKRs at the moment
+                </h2>
+                <p className="mt-2 text-sm">
+                  It looks like there are no OKRs to display. Create a new OKR
+                  to get started!
+                </p>
+              </div>
+            )}
+          </div>
 
-      {selectedOKR && (
-        <EditOKRDialog
-          open={isEditDialogOpen}
-          onOpenChange={setIsEditDialogOpen}
-          okrId={selectedOKR._id}
-          onOKRUpdated={handleOKRUpdated}
-        />
+          <CreateOKRDialog
+            open={isCreateDialogOpen}
+            onOpenChange={setIsCreateDialogOpen}
+            onOKRUpdated={handleOKRUpdated}
+          />
+
+          {selectedOKR && (
+            <EditOKRDialog
+              open={isEditDialogOpen}
+              onOpenChange={setIsEditDialogOpen}
+              okrId={selectedOKR._id}
+              onOKRUpdated={handleOKRUpdated}
+            />
+          )}
+
+          <AlertDialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Are you sure you want to delete this OKR?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the
+                  OKR and all of its associated key results.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDeleteConfirm}
+                  className="bg-red-500 text-white hover:bg-red-600"
+                >
+                  Yes, delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </>
       )}
-
-      <AlertDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              Are you sure you want to delete this OKR?
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the OKR
-              and all of its associated key results.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              className="bg-red-500 text-white hover:bg-red-600"
-            >
-              Yes, delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

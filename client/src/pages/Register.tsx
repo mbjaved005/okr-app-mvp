@@ -23,6 +23,7 @@ import { useToast } from "@/hooks/useToast";
 import { UserPlus, X } from "lucide-react";
 import { register as registerUser } from "@/api/auth";
 import departments from "@/data/departments.json";
+import { Spinner } from "@/components/ui/spinner"; // Import Spinner component
 
 type RegisterForm = {
   name: string;
@@ -58,6 +59,8 @@ export function Register() {
         throw new Error("Only @emumba.com emails are allowed");
       }
 
+      setLoading(true);
+      setEmailError("");
       const formData = {
         ...data,
         profilePicture: data.profilePicture?.[0],
@@ -74,14 +77,19 @@ export function Register() {
         throw new Error(response.message || "Registration failed");
       }
     } catch (error) {
-      if (error.response && error.response.status === 405) {
+      if (
+        error instanceof Error &&
+        (error as any).response &&
+        (error as any).response.status === 405
+      ) {
         setEmailError("Email is already registered");
         error.message = "Email is already registered";
       }
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Registration failed. Please try again.",
+        description:
+          (error as Error).message || "Registration failed. Please try again.",
       });
     } finally {
       setLoading(false);
@@ -98,6 +106,11 @@ export function Register() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary p-4">
+      {loading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <Spinner />
+        </div>
+      )}
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Create an account</CardTitle>
