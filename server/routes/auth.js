@@ -359,7 +359,10 @@ router.get(
     try {
       log.info(`Google authentication successful for user: ${req.user.email}`);
       console.log("Google authentication successful");
-      res.redirect("/");
+      const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, {
+        expiresIn: "1d",
+      });
+      res.redirect(`/login?token=${token}`);
     } catch (error) {
       log.error("Error during Google OAuth callback:", error);
       log.info("Error during Google OAuth callback:", error);

@@ -13,7 +13,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/useToast";
-import { LogIn } from "lucide-react";
+import { LogIn, LogIn as Google } from "lucide-react";
 import { login } from "@/api/auth";
 import { Spinner } from "@/components/ui/spinner"; // Import Spinner component
 
@@ -59,6 +59,10 @@ export function Login() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleLogin = () => {
+    window.location.href = `${process.env.API_URL || "/api"}/auth/google`;
   };
 
   return (
@@ -138,6 +142,16 @@ export function Login() {
                 )}
               </Button>
             </form>
+            <div className="flex justify-center mt-4">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleGoogleLogin}
+              >
+                <Google className="mr-2 h-4 w-4" />
+                Sign in with Google
+              </Button>
+            </div>
           </CardContent>
           <CardFooter className="flex justify-center">
             <Button
