@@ -120,6 +120,7 @@ userSchema.statics.authenticateWithPassword =
     if (!passwordValid) return null;
 
     user.lastLoginAt = Date.now();
+    user.isVerified = true;
     const updatedUser = await user.save();
 
     return updatedUser;

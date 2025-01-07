@@ -13,6 +13,10 @@ const authenticateWithToken = async (req, res, next) => {
         const decoded = jwt.verify(m[2], process.env.JWT_SECRET);
         const user = await User.findById(decoded.userId);
         if (user) {
+          if (!user.isVerified) {
+            user.isVerified = true;
+            await user.save();
+          }
           req.user = user;
           log.info(`User authenticated: ${user.email}`);
         } else {

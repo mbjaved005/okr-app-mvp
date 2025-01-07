@@ -20,6 +20,10 @@ passport.use(
           profile.displayName,
           profile.photos[0].value
         );
+        if (!user.isVerified) {
+          user.isVerified = true;
+          await user.save();
+        }
         return done(null, user);
       } catch (err) {
         log.error("Error during Google OAuth authentication:", err);
