@@ -173,8 +173,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         register,
         logout,
         checkAuthStatus,
-        updateProfile,
-        setUser,
+        updateProfile
       }}
     >
       {children}

@@ -35,7 +35,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import departments from "@/data/departments.json";
-import { Spinner } from "@/components/ui/spinner"; // Import Spinner component
+import { Spinner } from "@/components/ui/spinner";
 
 export function Dashboard() {
   console.log("Dashboard component rendered");

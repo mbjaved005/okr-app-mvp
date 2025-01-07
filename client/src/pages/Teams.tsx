@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -28,6 +27,8 @@ import { getOKRs } from "@/api/okr";
 import { useAuth } from "@/contexts/AuthContext";
 import departments from "@/data/departments.json";
 import { Spinner } from "@/components/ui/spinner"; // Import Spinner component
+import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
 
 type Employee = {
   id: string;
@@ -80,6 +81,10 @@ export function Teams() {
             okrsCount: userOKRs.length, // Count OKRs where the user is an owner
           };
         });
+
+        // Sort employees by name in ascending order
+        employeesWithStats.sort((a, b) => a.name.localeCompare(b.name));
+
         setEmployees(employeesWithStats);
         setFilteredEmployees(employeesWithStats);
       } catch (error) {
@@ -128,7 +133,7 @@ export function Teams() {
   return (
     <div className="space-y-6">
       {loading ? (
-        <div className="flex justify-center items-center h-screen">
+        <div className="flex justify-center items-center h-full">
           <Spinner /> {/* Show spinner while loading */}
         </div>
       ) : (
@@ -243,44 +248,38 @@ export function Teams() {
                     )}
                   </Avatar>
                   <div>
-                    <CardTitle className="text-lg">{employee.name}</CardTitle>
+                    <CardTitle className="text-lg">
+                      {employee.name}{" "}
+                      <span className="text-sm text-muted-foreground">
+                        ({employee.email})
+                      </span>
+                    </CardTitle>
                     <p className="text-sm text-muted-foreground">
-                      {employee.designation}
+                      {employee.designation} | {employee.department}
                     </p>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div>
-                      <p className="text-sm text-muted-foreground">
-                        Department
-                      </p>
-                      <p className="font-medium">{employee.department}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Email</p>
-                      <p className="font-medium">{employee.email}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Role</p>
                       <p className="font-medium">{employee.role}</p>
                     </div>
-                    <div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">
-                          Average OKR Progress
-                        </span>
-                        <span className="font-medium">
-                          {employee.progress}%
-                        </span>
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12">
+                        <CircularProgressbar
+                          value={employee.progress}
+                          text={`${employee.progress}%`}
+                          styles={buildStyles({
+                            textSize: "30px",
+                          })}
+                        />
                       </div>
-                      <Progress value={employee.progress} className="mt-2" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Total OKRs
-                      </p>
-                      <p className="font-medium">{employee.okrsCount}</p>
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          Total OKRs
+                        </p>
+                        <p className="font-medium">{employee.okrsCount}</p>
+                      </div>
                     </div>
                   </div>
                 </CardContent>

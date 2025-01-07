@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/useToast";
 import api from "@/api/Api";
 
@@ -49,18 +50,24 @@ export function VerifyEmail() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Email Verification</CardTitle>
+          <CardContent>
+            {loading ? (
+              <div className="space-y-4 text-center">
+                <h2 className="verifying font-semibold">
+                  Verifying. Please wait a moment...
+                </h2>
+                <div className="flex justify-center items-center h-16">
+                  <Spinner className="h-8 w-8" />
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4 text-center">
+                <h2 className="text-xl font-semibold">{message}</h2>
+                <Button onClick={handleRedirect}>Go to Login</Button>
+              </div>
+            )}
+          </CardContent>
         </CardHeader>
-        <CardContent>
-          {loading ? (
-            <p>Loading...</p>
-          ) : (
-            <div>
-              <p>{message}</p>
-              <Button onClick={handleRedirect}>Go to Login</Button>
-            </div>
-          )}
-        </CardContent>
       </Card>
     </div>
   );

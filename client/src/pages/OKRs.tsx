@@ -58,7 +58,8 @@ import departments from "@/data/departments.json";
 import { useNavigate } from "react-router-dom";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import { Spinner } from "@/components/ui/spinner"; // Import Spinner component
+import { Spinner } from "@/components/ui/spinner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -106,13 +107,12 @@ const getStatusFromProgress = (progress: number) => {
   }
   return "Unknown";
 };
-
 export function OKRs() {
   const navigate = useNavigate();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedOKR, setSelectedOKR] = useState<OKR | null>(null);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [loading, setLoading] = useState(true);
   interface OKR {
     _id: string;
     title: string;
@@ -128,7 +128,7 @@ export function OKRs() {
 
   const [okrs, setOkrs] = useState<OKR[]>([]);
   const [users, setUsers] = useState<
-    { id: string; name: string; email: string }[]
+    { id: string; name: string; email: string; profilePicture?: string }[]
   >([]);
   const [filter, setFilter] = useState({
     department: "all",
@@ -250,6 +250,12 @@ export function OKRs() {
     return user ? getUserInitials(user.name) : null;
   };
 
+  const getUserProfilePicture = (userId: string) => {
+    const user = users.find((user) => user.id === userId);
+    if (!user) return null;
+    return user.profilePicture ? user.profilePicture.replace(/\\/g, "/") : null;
+  };
+
   const filteredOKRs = okrs.filter((okr) => {
     const matchesDepartment =
       filter.department === "all" || okr.department === filter.department;
@@ -339,7 +345,7 @@ export function OKRs() {
             <div className="relative flex-1">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search OKRs..."
+                placeholder="Search OKRs by title"
                 className="pl-8 w-full"
                 value={filter.search}
                 onChange={(e) =>
@@ -638,9 +644,9 @@ export function OKRs() {
                   </CardHeader>
                   <CardContent className="bg-transparent p-1">
                     <div className="space-y-1">
-                      {/* <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground">
                         {okr.description}
-                      </p> */}
+                      </p>
                       <div className="grid grid-cols-4 gap-3 text-sm">
                         <div>
                           <p className="text-muted-foreground">Start Date</p>
@@ -659,9 +665,15 @@ export function OKRs() {
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger>
-                                <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-background text-sm font-medium text-blue-600">
-                                  {getUserInitialsById(okr.createdBy)}
-                                </div>
+                                <Avatar className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-background text-sm font-medium text-blue-600">
+                                  <AvatarImage
+                                    src={getUserProfilePicture(okr.createdBy)}
+                                    alt="Profile"
+                                  />
+                                  <AvatarFallback>
+                                    {getUserInitialsById(okr.createdBy)}
+                                  </AvatarFallback>
+                                </Avatar>
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p>{getOwnerName(okr.createdBy)}</p>
@@ -675,13 +687,32 @@ export function OKRs() {
                             {okr.owners.map((owner, index) => {
                               const ownerInitials = getOwnerInitials(owner);
                               const ownerName = getOwnerName(owner);
+                              const ownerProfilePicture =
+                                getUserProfilePicture(owner);
                               return ownerInitials && ownerName ? (
                                 <TooltipProvider key={index}>
                                   <Tooltip>
                                     <TooltipTrigger>
-                                      <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-background text-sm font-medium text-blue-600 ring-2 ring-background">
-                                        {ownerInitials}
-                                      </div>
+                                      <Avatar className="h-8 w-8">
+                                        {ownerProfilePicture ? (
+                                          <AvatarImage
+                                            src={`${ownerProfilePicture.replace(
+                                              /\\/g,
+                                              "/"
+                                            )}`}
+                                            alt={ownerName}
+                                          />
+                                        ) : (
+                                          <AvatarFallback>
+                                            {ownerName
+                                              ? ownerName
+                                                  .split(" ")
+                                                  .map((n) => n[0])
+                                                  .join("")
+                                              : "N/A"}
+                                          </AvatarFallback>
+                                        )}
+                                      </Avatar>
                                     </TooltipTrigger>
                                     <TooltipContent>
                                       <p>{ownerName}</p>
