@@ -14,6 +14,11 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
+        log.info("Google OAuth callback invoked");
+        log.info(`Profile ID: ${profile.id}`);
+        log.info(`Profile Email: ${profile.emails[0].value}`);
+        log.info(`Profile Display Name: ${profile.displayName}`);
+        
         const user = await UserService.findOrCreateGoogleUser(
           profile.id,
           profile.emails[0].value,
@@ -24,6 +29,7 @@ passport.use(
           user.isVerified = true;
           await user.save();
         }
+        log.info(`User authenticated: ${user.email}`);
         return done(null, user);
       } catch (err) {
         log.error("Error during Google OAuth authentication:", err);
