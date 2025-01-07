@@ -61,10 +61,6 @@ export function Login() {
     }
   };
 
-  const handleGoogleLogin = () => {
-    window.location.href = `${process.env.API_URL || "/api"}/auth/google`;
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary p-4">
       {loading ? (
@@ -146,7 +142,8 @@ export function Login() {
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={handleGoogleLogin}
+                disabled
+                title="Coming soon"
               >
                 <Google className="mr-2 h-4 w-4" />
                 Sign in with Google
