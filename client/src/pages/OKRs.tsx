@@ -665,7 +665,7 @@ export function OKRs() {
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger>
-                                <Avatar className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-background text-sm font-medium text-blue-600">
+                                <Avatar className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-background text-sm font-medium text-blue-600">
                                   <AvatarImage
                                     src={getUserProfilePicture(okr.createdBy)}
                                     alt="Profile"
@@ -693,7 +693,7 @@ export function OKRs() {
                                 <TooltipProvider key={index}>
                                   <Tooltip>
                                     <TooltipTrigger>
-                                      <Avatar className="h-8 w-8">
+                                      <Avatar className="h-12 w-12 border-2 border-black-500">
                                         {ownerProfilePicture ? (
                                           <AvatarImage
                                             src={`${ownerProfilePicture.replace(
