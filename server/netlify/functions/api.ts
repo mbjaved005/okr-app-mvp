@@ -101,6 +101,15 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userManagementRoutes);
 app.use("/api/okrs", okrRoutes);
 
+app.get(
+  "/api/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/login" }),
+  (req, res) => {
+    // Successful authentication, redirect home.
+    res.redirect("/");
+  }
+);
+
 // Auth routes
 app.use(
   "/api/auth",
