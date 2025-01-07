@@ -14,8 +14,7 @@ const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
 const { logger } = require("../../utils/log");
-const passport = require("passport");
-require("../../config/passport"); // Ensure passport configuration is loaded
+const passport = require("../../config/passport");
 
 console.log(authRoutes);
 

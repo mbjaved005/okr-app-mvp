@@ -18,7 +18,7 @@ passport.use(
         log.info(`Profile ID: ${profile.id}`);
         log.info(`Profile Email: ${profile.emails[0].value}`);
         log.info(`Profile Display Name: ${profile.displayName}`);
-        
+
         const user = await UserService.findOrCreateGoogleUser(
           profile.id,
           profile.emails[0].value,
@@ -51,3 +51,5 @@ passport.deserializeUser(async (id, done) => {
     done(err, null);
   }
 });
+
+module.exports = passport;
