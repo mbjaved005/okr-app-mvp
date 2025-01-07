@@ -15,6 +15,12 @@ to = "/.netlify/functions/api/:splat"
 status = 200
 force = true
 
+# Redirect all other requests to index.html
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
+
 [dev]
 publish = "client/dist"
 functions = "server/netlify/functions"

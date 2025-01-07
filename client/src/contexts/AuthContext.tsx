@@ -1,5 +1,15 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from "react";
-import { login as apiLogin, register as apiRegister, updateProfile as apiUpdateProfile } from "@/api/auth";
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  useCallback,
+} from "react";
+import {
+  login as apiLogin,
+  register as apiRegister,
+  updateProfile as apiUpdateProfile,
+} from "@/api/auth";
 
 type User = {
   id: string;
@@ -9,13 +19,22 @@ type User = {
   department: string;
   designation: string;
   profilePicture?: string;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
 };
 
 type AuthContextType = {
   isAuthenticated: boolean;
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
-  register: (name: string, email: string, password: string, role: string, designation: string, department: string, profilePicture?: File) => Promise<void>;
+  register: (
+    name: string,
+    email: string,
+    password: string,
+    role: string,
+    designation: string,
+    department: string,
+    profilePicture?: File
+  ) => Promise<void>;
   logout: () => void;
   checkAuthStatus: () => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<void>;
@@ -45,7 +64,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
           setUser(parsedUser);
           setIsAuthenticated(true);
-          console.log("Auth status checked. User data set in context:", parsedUser);
+          console.log(
+            "Auth status checked. User data set in context:",
+            parsedUser
+          );
         } else {
           throw new Error("User data not found");
         }
@@ -86,9 +108,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const register = async (name: string, email: string, password: string, role: string, designation: string, department: string, profilePicture?: File) => {
+  const register = async (
+    name: string,
+    email: string,
+    password: string,
+    role: string,
+    designation: string,
+    department: string,
+    profilePicture?: File
+  ) => {
     try {
-      const response = await apiRegister({ name, email, password, role, designation, department, profilePicture });
+      const response = await apiRegister({
+        name,
+        email,
+        password,
+        role,
+        designation,
+        department,
+        profilePicture,
+      });
       if (response.success) {
         console.log("User registered successfully:", response.user);
         return response;
@@ -127,7 +165,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, register, logout, checkAuthStatus, updateProfile }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        user,
+        login,
+        register,
+        logout,
+        checkAuthStatus,
+        updateProfile,
+        setUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

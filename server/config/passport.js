@@ -1,6 +1,6 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const User = require("../models/user"); // Adjust the path as needed
+const UserService = require("../services/user.js");
 const { logger } = require("../utils/log"); // Import the logger
 
 const log = logger("config/passport"); // Define the log variable
@@ -35,7 +35,7 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const user = await User.findById(id);
+    const user = await UserService.get(id);
     done(null, user);
   } catch (err) {
     done(err, null);

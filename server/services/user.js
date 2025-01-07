@@ -3,6 +3,7 @@ const User = require("../models/user.js");
 const OKR = require("../models/okr.js");
 const { generatePasswordHash, validatePassword } = require("../utils/password");
 const { logger } = require("../utils/log.js");
+const jwt = require("jsonwebtoken");
 
 const log = logger("service/userService");
 
@@ -180,6 +181,7 @@ class UserService {
         department,
         profilePicture,
         token: randomUUID(),
+        isVerified: false,
       });
 
       await user.save();
@@ -221,6 +223,38 @@ class UserService {
       await user.save();
     }
     return user;
+  }
+
+  static generateEmailVerificationToken(user) {
+    const payload = { userId: user._id, email: user.email };
+    const secret = process.env.JWT_SECRET;
+    const options = { expiresIn: "1h" };
+    return jwt.sign(payload, secret, options);
+  }
+
+  static verifyEmailVerificationToken(token) {
+    const secret = process.env.JWT_SECRET;
+    try {
+      const decoded = jwt.verify(token, secret);
+      return decoded;
+    } catch (err) {
+      log.error(`Error while verifying email verification token: ${err}`);
+      throw `Error while verifying email verification token: ${err}`;
+    }
+  }
+
+  static async verifyEmailToken(token) {
+    try {
+      const decoded = UserService.verifyEmailVerificationToken(token);
+      const user = await User.findById(decoded.userId);
+      if (!user) throw "User not found";
+      user.isVerified = true;
+      await user.save();
+      return user;
+    } catch (err) {
+      log.error(`Error while verifying email token: ${err}`);
+      throw `Error while verifying email token: ${err}`;
+    }
   }
 }
 
