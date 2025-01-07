@@ -17,7 +17,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { getQuarter } from "@/lib/utils";
-import { Spinner } from "@/components/ui/spinner"; // Import Spinner component
+import { Spinner } from "@/components/ui/spinner";
+import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import "react-circular-progressbar/dist/styles.css";
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -63,12 +66,19 @@ export function OKRDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [okr, setOkr] = useState<any>(null);
-  const [users, setUsers] = useState<any[]>([]);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const { toast } = useToast();
   const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState<
+    { id: string; name: string; email: string; profilePicture?: string }[]
+  >([]);
 
+  const getUserProfilePicture = (userId: string) => {
+    const user = users.find((user) => user.id === userId);
+    if (!user) return null;
+    return user.profilePicture ? user.profilePicture.replace(/\\/g, "/") : null;
+  };
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -86,7 +96,7 @@ export function OKRDetail() {
         });
         navigate("/okrs");
       } finally {
-        setLoading(false); // Set loading to false after fetching data
+        setLoading(false);
       }
     };
     fetchData();
@@ -123,8 +133,8 @@ export function OKRDetail() {
   return (
     <div className="space-y-6">
       {loading ? (
-        <div className="flex justify-center items-center h-screen">
-          <Spinner /> {/* Show spinner while loading */}
+        <div className="flex justify-center items-center h-full">
+          <Spinner />
         </div>
       ) : (
         <>
@@ -220,15 +230,19 @@ export function OKRDetail() {
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Created by
-                  </h3>
+                  <p className="text-muted-foreground">Created By</p>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger>
-                        <div className="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-medium text-blue-600">
-                          {getUserInitials(getOwnerName(okr.createdBy))}
-                        </div>
+                        <Avatar className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-background text-sm font-medium text-blue-600 border-2 border-black-500">
+                          <AvatarImage
+                            src={getUserProfilePicture(okr.createdBy)}
+                            alt="Profile"
+                          />
+                          <AvatarFallback>
+                            {getUserInitials(getOwnerName(okr.createdBy))}
+                          </AvatarFallback>
+                        </Avatar>
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>{getOwnerName(okr.createdBy)}</p>
@@ -243,53 +257,56 @@ export function OKRDetail() {
                   Owners
                 </h3>
                 <div className="flex -space-x-2">
-                  {okr.owners.map((ownerId: string, index: number) => (
-                    <TooltipProvider key={index}>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-medium text-blue-600 ring-2 ring-white">
-                            {getUserInitials(getOwnerName(ownerId))}
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{getOwnerName(ownerId)}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  ))}
+                  {okr.owners.map((ownerId: string, index: number) => {
+                    const ownerInitials = getUserInitials(
+                      getOwnerName(ownerId)
+                    );
+                    const ownerName = getOwnerName(ownerId);
+                    const ownerProfilePicture = getUserProfilePicture(ownerId);
+                    return ownerInitials && ownerName ? (
+                      <TooltipProvider key={index}>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Avatar className="h-12 w-12 border-2 border-black-500">
+                              <AvatarImage
+                                src={ownerProfilePicture}
+                                alt={ownerName}
+                              />
+                              <AvatarFallback>{ownerInitials}</AvatarFallback>
+                            </Avatar>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{ownerName}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ) : null;
+                  })}
                 </div>
               </div>
-
               <div>
                 <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">
                   Key Results
                 </h3>
                 <div className="space-y-4">
                   {okr.keyResults.map((kr: any, index: number) => (
-                    <Card
-                      key={index}
-                      className="bg-gray-50 dark:bg-gray-800/50"
-                    >
+                    <Card key={index}>
                       <CardContent className="p-4 space-y-4">
-                        <h4 className="font-medium">{kr.title}</h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-500 dark:text-gray-400">
-                              Progress ({kr.currentValue} / {kr.targetValue})
-                            </span>
-                            <span className="font-medium">
-                              {Math.round(
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12">
+                            <CircularProgressbar
+                              value={Math.round(
                                 (kr.currentValue / kr.targetValue) * 100
                               )}
-                              %
-                            </span>
+                              text={`${Math.round(
+                                (kr.currentValue / kr.targetValue) * 100
+                              )}%`}
+                              styles={buildStyles({
+                                textSize: "30px",
+                              })}
+                            />
                           </div>
-                          <Progress
-                            value={Math.round(
-                              (kr.currentValue / kr.targetValue) * 100
-                            )}
-                            className="h-2"
-                          />
+                          <h4 className="font-medium">{kr.title}</h4>
                         </div>
                       </CardContent>
                     </Card>

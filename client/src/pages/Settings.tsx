@@ -32,7 +32,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { updateProfile } from "@/api/auth";
 import api from "@/api/Api";
 import departments from "@/data/departments.json";
-import { Spinner } from "@/components/ui/spinner"; // Import Spinner component
+import { Spinner } from "@/components/ui/spinner";
 
 export function Settings() {
   const { toast } = useToast();
@@ -93,6 +93,7 @@ export function Settings() {
   };
 
   const handleSave = async () => {
+    setIsUploading(true);
     try {
       console.log("Updating profile with data:", formData);
       const response = await updateProfile(formData);
@@ -114,6 +115,8 @@ export function Settings() {
           "There was an error updating your profile. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -366,7 +369,9 @@ export function Settings() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button onClick={handleSave}>Update Profile</Button>
+                  <Button onClick={handleSave} disabled={isUploading}>
+                    {isUploading ? <Spinner /> : "Update Profile"}
+                  </Button>
                 </CardFooter>
               </Card>
 
