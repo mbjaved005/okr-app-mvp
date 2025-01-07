@@ -32,7 +32,7 @@ app.enable("json spaces");
 app.enable("strict routing");
 
 // Serve static files from the React app
-app.use(express.static(path.join(__dirname, "client/build")));
+app.use(express.static(path.join(__dirname, "../../../client/build")));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -111,10 +111,6 @@ app.use(
   authRoutes
 );
 
-app.get("/api/auth/test", (req, res) => {
-  res.json({ message: "Auth route is working" });
-});
-
 app.use("/uploads", (req, res, next) => {
   log.info(`Static file requested: ${req.url}`);
   next();
@@ -177,6 +173,11 @@ app.use((req, res, next) => {
   } else {
     next();
   }
+});
+
+// Serve the frontend application for all other routes
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../../client/build/index.html"));
 });
 
 app.use((err, req, res, next) => {

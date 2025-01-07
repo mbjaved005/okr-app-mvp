@@ -7,11 +7,9 @@ const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const path = require("path");
 const jwt = require("jsonwebtoken");
-const {
-  validatePassword,
-  generatePasswordHash,
-} = require("../utils/password.js");
+const { validatePassword } = require("../utils/password.js");
 const { logger } = require("../utils/log.js");
+const { sendVerificationEmail } = require("../utils/email");
 
 const log = logger("api/routes/authRoutes");
 const router = express.Router();
@@ -108,6 +106,10 @@ router.post("/login", async (req, res) => {
     const user = await UserService.authenticateWithPassword(email, password);
 
     if (user) {
+      if (!user.isVerified) {
+        log.warn(`Unverified user login attempt: ${user.email}`);
+        return sendError("Please verify your email before logging in");
+      }
       log.info(`User logged in successfully: ${user.email}`);
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
         expiresIn: "1d",
@@ -181,24 +183,39 @@ router.post("/register", upload.single("profilePicture"), async (req, res) => {
       profilePicture,
     });
     log.info(`User registered successfully: ${user.email}`);
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
-    });
-    console.log(
-      "User data being sent to client after registration:",
-      user.toJSON()
-    );
+
+    // Send verification email
+    await sendVerificationEmail(user);
+
     return res.status(201).json({
       success: true,
-      message: "User registered successfully",
-      token,
-      user: user.toJSON(),
+      message: "User registered successfully. Please verify your email.",
     });
   } catch (error) {
     log.error("Error during registration:", error);
     return res
       .status(500)
       .json({ error: "An unexpected error occurred during registration" });
+  }
+});
+
+router.get("/verify-email", async (req, res) => {
+  const { token } = req.query;
+  try {
+    const user = await UserService.verifyEmailToken(token);
+    if (user) {
+      log.info(`Email verified successfully for user: ${user.email}`);
+      return res.json({
+        success: true,
+        message: "Email verified successfully",
+      });
+    } else {
+      log.warn("Invalid or expired email verification token");
+      return res.status(400).json({ error: "Invalid or expired token" });
+    }
+  } catch (error) {
+    log.error("Error during email verification:", error);
+    return res.status(500).json({ error: "An unexpected error occurred" });
   }
 });
 

@@ -82,6 +82,10 @@ const userSchema = new mongoose.Schema(
       index: true,
       default: () => randomUUID(),
     },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     versionKey: false,

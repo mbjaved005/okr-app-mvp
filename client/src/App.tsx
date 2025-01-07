@@ -19,6 +19,7 @@ import { OKRDetail } from "./pages/OKRDetail";
 import { Layout } from "./components/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useEffect } from "react";
+import VerifyEmail from "./pages/VerifyEmail"; // Import VerifyEmail page
 
 function RouteLogger() {
   const location = useLocation();
@@ -40,6 +41,8 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/auth/google/callback" element={<Login />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />{" "}
+            {/* Add route for VerifyEmail */}
             <Route
               path="/"
               element={
@@ -49,6 +52,8 @@ function App() {
               }
             >
               <Route index element={<Dashboard />} />
+              <Route path="dashboard" element={<Dashboard />} />{" "}
+              {/* Add explicit route for Dashboard */}
               <Route path="okrs" element={<OKRs />} />
               <Route path="okrs/:id" element={<OKRDetail />} />
               <Route path="teams" element={<Teams />} />

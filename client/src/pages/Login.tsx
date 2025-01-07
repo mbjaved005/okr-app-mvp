@@ -15,7 +15,7 @@ import {
 import { useToast } from "@/hooks/useToast";
 import { LogIn, LogIn as Google } from "lucide-react";
 import { login } from "@/api/auth";
-import { Spinner } from "@/components/ui/spinner"; // Import Spinner component
+import { Spinner } from "@/components/ui/spinner";
 
 type LoginForm = {
   email: string;
@@ -44,8 +44,8 @@ export function Login() {
         title: "Success",
         description: "Logged in successfully",
       });
-      console.log("Attempting to navigate to /");
-      navigate("/");
+      console.log("Attempting to navigate to /dashboard");
+      navigate("/dashboard");
       console.log("Navigation completed");
     } catch (error) {
       console.error("Login error:", error);
